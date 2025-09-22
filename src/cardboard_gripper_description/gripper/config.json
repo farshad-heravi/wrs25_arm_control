@@ -1,0 +1,7 @@
+{
+  "documentId": "693768626e90059f179ac24b",
+  "outputFormat": "urdf",
+  "packageName": "cardboard_gripper_description/gripper",
+  "robotName": "gripper",
+  "assemblyName": "Cardboard_folder_gripper"
+}

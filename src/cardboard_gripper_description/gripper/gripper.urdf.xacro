@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+<!-- Generated using onshape-to-robot -->
+<!-- Onshape document_id: 693768626e90059f179ac24b -->
+
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="gripper">
+  <xacro:macro name="cardboard_gripper" params="parent">
+    <!-- Link base -->
+    <link name="cbf_base">
+      <inertial>
+        <origin xyz="0.0541823 0.0183059 -0.00518578" rpy="0 0 0"/>
+        <mass value="0.624595"/>
+        <inertia ixx="0.000259753" ixy="0" ixz="-3.28896e-05" iyy="0.000754574" iyz="0" izz="0.000976043"/>
+      </inertial>
+      <!-- Part base -->
+      <visual>
+        <origin xyz="0.0462396 0.0183059 -0.0195561" rpy="0 -0 0"/>
+        <geometry>
+          <mesh filename="package://cardboard_gripper_description/gripper/assets/base.stl"/>
+        </geometry>
+        <material name="base_material">
+          <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0.0462396 0.0183059 -0.0195561" rpy="0 -0 0"/>
+        <geometry>
+          <mesh filename="package://cardboard_gripper_description/gripper/assets/base.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <!-- Link finger -->
+    <link name="cbf_finger">
+      <inertial>
+        <origin xyz="0.0255201 0 -0.009" rpy="0 0 0"/>
+        <mass value="0.0188484"/>
+        <inertia ixx="7.42107e-06" ixy="0" ixz="0" iyy="1.33551e-05" iyz="0" izz="5.9468e-06"/>
+      </inertial>
+      <!-- Part finger -->
+      <visual>
+        <origin xyz="0.02613 -0.001 -0.009" rpy="-1.5708 -0 0"/>
+        <geometry>
+          <mesh filename="package://cardboard_gripper_description/gripper/assets/finger.stl"/>
+        </geometry>
+        <material name="finger_material">
+          <color rgba="0.615686 0.811765 0.929412 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0.02613 -0.001 -0.009" rpy="-1.5708 -0 0"/>
+        <geometry>
+          <mesh filename="package://cardboard_gripper_description/gripper/assets/finger.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <!-- joint base to parent -->
+    <joint name="cb_gripper_base_to_parent" type="fixed">
+      <!-- <origin xyz="-0.045 -0.02 0" rpy="0 0 0"/> -->
+      <origin xyz="0.01 -0.018 0.047" rpy="0 1.5708 0"/>
+      <parent link="${parent}"/>
+      <child link="cbf_base"/>
+    </joint>
+    <!-- Joint from base to finger -->
+    <joint name="cb_gripper_base_to_finger" type="revolute">
+      <origin xyz="0.19737 0.00930595 0.00144388" rpy="1.5708 -0 0"/>
+      <parent link="cbf_base"/>
+      <child link="cbf_finger"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="10" velocity="10" lower="0" upper="1.5708"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Create world link -->
+  <!-- <link name="world"/> -->
+</robot>
