@@ -133,4 +133,140 @@
         <mu2>0.9</mu2>
     </gazebo>
 
+    <ros2_control name="RobotSystem" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+        <!-- Joints for packing_arm_ -->
+        <joint name="packing_arm_shoulder_pan_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="packing_arm_shoulder_lift_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="packing_arm_elbow_joint">
+            <command_interface name="position">
+                <param name="min">-3.14159265359</param>
+                <param name="max">3.14159265359</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="packing_arm_wrist_1_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="packing_arm_wrist_2_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="packing_arm_wrist_3_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <!-- Robotiq Gripper Joint for packing_arm_ -->
+        <joint name="packing_arm_robotiq_85_left_knuckle_joint">
+            <command_interface name="position">
+                <param name="min">0.0</param>
+                <param name="max">0.80285</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+
+        <!-- Joints for cb_ (Cardboard Arm) -->
+        <joint name="cb_shoulder_pan_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="cb_shoulder_lift_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="cb_elbow_joint">
+            <command_interface name="position">
+                <param name="min">-3.14159265359</param>
+                <param name="max">3.14159265359</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="cb_wrist_1_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="cb_wrist_2_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <joint name="cb_wrist_3_joint">
+            <command_interface name="position">
+                <param name="min">-6.28318530718</param>
+                <param name="max">6.28318530718</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+        <!-- Cardboard Gripper Joint for cb_ -->
+        <joint name="cb_gripper_base_to_finger">
+            <command_interface name="position">
+                <param name="min">0.0</param>
+                <param name="max">1.5708</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+        </joint>
+    </ros2_control>
 </robot>
