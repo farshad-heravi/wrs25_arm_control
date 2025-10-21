@@ -9,6 +9,13 @@
     <xacro:include filename="$(find robot_description)/urdf/common.gazebo.xacro" />
     <!-- ur5 -->
     <xacro:include filename="$(find robot_description)/urdf/ur5.urdf.xacro" />
+    <!-- gripper -->
+    <xacro:include filename="$(find robot_description)/urdf/robotiq/robotiq_85_gripper.urdf.xacro" />
+    <!-- cardboard gripper -->
+    <xacro:include filename="$(find cardboard_gripper_description)/gripper/gripper.urdf.xacro" />
+
+    <!-- World link -->
+    <link name="world" />
 
     <link name="arm_mount_link" >
         <visual>
@@ -32,21 +39,14 @@
     <!-- arm 1 -->
     <xacro:ur5_robot prefix="${arm_1_prefix}" joint_limited="false"/>
 
-    <link name="world" />
-
     <joint name="world_${arm_1_prefix}joint" type="fixed">
         <parent link="world" />
         <child link = "${arm_1_prefix}base_link" />
-        <!-- <origin xyz="0.0 0.23134 0.65866" rpy="${-3*pi/4} 0.0 0.0" /> -->
-        <origin xyz="0.0 0.3 0.65866" rpy="${-3*pi} 0.0 0.0" />
+        <origin xyz="0.0 0.3 0.65866" rpy="${pi} 0.0 0.0" />
     </joint>
 
-    <xacro:include filename="$(find robot_description)/urdf/robotiq/robotiq_85_gripper.urdf.xacro" />
-
     <!-- Robotiq Coupler -->
-    <!--  + Height added by the coupler: 8mm -->
-    <!--  + Reference frame: at the middle (4mm) -->
-    <link name="robotiq_coupler">
+    <link name="${arm_1_prefix}robotiq_coupler">
     <visual>
         <geometry>
         <mesh filename="package://robot_description/meshes/coupler.stl" />
@@ -68,16 +68,16 @@
     <joint name="${arm_1_prefix}robotiq_coupler_joint" type="fixed">
         <origin xyz="0 0 0.0" rpy="0 0 ${-pi/2.0}" />
         <parent link="${arm_1_prefix}tool0"/>
-        <child link="robotiq_coupler"/>
+        <child link="${arm_1_prefix}robotiq_coupler"/>
     </joint>
-    <gazebo reference="robotiq_coupler">
+    <gazebo reference="${arm_1_prefix}robotiq_coupler">
     <mu1>0.9</mu1>
     <mu2>0.9</mu2>
     </gazebo>
 
     <!-- Attach the robotiq 85 gripper -->
-    <xacro:robotiq_85_gripper prefix="" parent="robotiq_coupler" >
-    <origin xyz="0 0 0.005" rpy="0 ${-pi/2} ${pi/2}"/>
+    <xacro:robotiq_85_gripper prefix="${arm_1_prefix}" parent="${arm_1_prefix}robotiq_coupler" >
+        <origin xyz="0 0 0.005" rpy="0 ${-pi/2} ${pi/2}"/>
     </xacro:robotiq_85_gripper>
 
 
@@ -86,19 +86,16 @@
     <xacro:ur5_robot prefix="${arm_2_prefix}" joint_limited="false"/>
 
     <!-- Add the gripper -->
-    <xacro:include filename="$(find cardboard_gripper_description)/gripper/gripper.urdf.xacro" />
     <xacro:cardboard_gripper parent="${arm_2_prefix}ee_link" />
 
     <joint name="world_${arm_2_prefix}joint" type="fixed">
         <parent link="world" />
         <child link = "${arm_2_prefix}base_link" />
-        <!--origin xyz="0.0 -0.23134 0.65866" rpy="${3*pi/4} 0.0 0.0" /--> <!-- for the 45-degree config -->
         <origin xyz="0.0 -0.3 0.65866" rpy="${pi} 0.0 ${pi}" />
     </joint>
 
 
     <!-- Add a table as a ground -->
-    <!-- Table -->
     <link name="table">
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
