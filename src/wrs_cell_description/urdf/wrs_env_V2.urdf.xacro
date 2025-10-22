@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wrs_cell_v2">
+
+    <xacro:property name="arm_prefix" value="ur5_"/>
+
+    <!-- ur5 -->
+    <xacro:include filename="$(find robot_description)/urdf/ur5.urdf.xacro" />
+    <!-- gripper -->
+    <xacro:include filename="$(find robot_description)/urdf/robotiq/robotiq_85_gripper.urdf.xacro" />
+
+    <!-- arm -->
+    <xacro:ur5_robot prefix="${arm_prefix}" joint_limited="false"/>
+
+    <!-- World link -->
+    <link name="world" />
+
+    <!-- Robot Base -->
+    <link name="robot_base">
+        <visual>
+            <geometry>
+                <box size="1.0 0.8 0.4"/>
+            </geometry>
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.8 0.8 0.4"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="50"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+        </inertial>
+    </link>
+
+    <joint name="world_to_base_joint" type="fixed">
+        <parent link="world"/>
+        <child link="robot_base"/>
+        <origin xyz="0 0 0.2" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Attach UR5 to the base -->
+    <joint name="base_to_ur5_joint" type="fixed">
+        <parent link="robot_base"/>
+        <child link="${arm_prefix}base_link"/>
+        <origin xyz="0 0.25 0.2" rpy="0 0 ${pi}"/>
+    </joint>
+
+    <!-- Robotiq Coupler -->
+    <link name="${arm_prefix}robotiq_coupler">
+      <visual>
+        <geometry>
+          <mesh filename="package://robot_description/meshes/suction_base.stl" />
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://robot_description/meshes/suction_base.stl" />
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="2.073e-05   1.45286e-03  -1.1049e-03" rpy="0 0 0" />
+        <mass value="0.168" />
+        <inertia ixx="6.69695624e-05" ixy="5.21511788e-09" ixz="-2.74383009e-08" 
+                 iyy="7.85088161e-05" iyz="5.41105193e-07" izz="1.41819717e-04"/>
+      </inertial>
+    </link>
+
+    <joint name="${arm_prefix}robotiq_coupler_joint" type="fixed">
+      <origin xyz="0 0 -0.003" rpy="0 0 ${-pi/2.0}" />
+      <parent link="${arm_prefix}tool0"/>
+      <child link="${arm_prefix}robotiq_coupler"/>
+    </joint>
+
+    <!-- Attach the robotiq 85 gripper -->
+    <xacro:robotiq_85_gripper prefix="${arm_prefix}" parent="${arm_prefix}robotiq_coupler" >
+      <origin xyz="0 0 0.08" rpy="0 ${-pi/2} ${pi/2}"/>
+    </xacro:robotiq_85_gripper> 
+
+    <!-- Rail -->
+    <link name="rail_link">
+        <visual>
+            <geometry>
+                <box size="2.0 0.8 0.4"/>
+            </geometry>
+            <material name="dark_grey">
+                <color rgba="0.3 0.3 0.3 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="2.0 0.8 0.4"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="10"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+        </inertial>
+    </link>
+
+    <joint name="world_to_rail_joint" type="fixed">
+        <parent link="world"/>
+        <child link="rail_link"/>
+        <origin xyz="0.4 0.83 0.2" rpy="0 0 0"/>
+    </joint>
+
+</robot>
