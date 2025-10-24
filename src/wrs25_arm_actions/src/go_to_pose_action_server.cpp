@@ -1,5 +1,6 @@
 #include <memory>
 #include <thread>
+#include <future>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <rclcpp_components/register_node_macro.hpp>
@@ -15,8 +16,7 @@ public:
     using GoalHandleGoToPose = rclcpp_action::ServerGoalHandle<GoToPose>;
 
     explicit GoToPoseActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-        : Node("go_to_pose_action_server", options),
-          move_group_interface_(std::shared_ptr<rclcpp::Node>(this), "ur5_arm")
+        : Node("go_to_pose_action_server", options)
     {
         using namespace std::placeholders;
 
@@ -32,7 +32,7 @@ public:
 
 private:
     rclcpp_action::Server<GoToPose>::SharedPtr action_server_;
-    moveit::planning_interface::MoveGroupInterface move_group_interface_;
+    std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_interface_;
 
     rclcpp_action::GoalResponse handle_goal(
         const rclcpp_action::GoalUUID & uuid,
@@ -62,16 +62,20 @@ private:
 
     void execute(const std::shared_ptr<GoalHandleGoToPose> goal_handle)
     {
-        RCLCPP_INFO(this->get_logger(), "Executing goal");
+        RCLCPP_INFO(this->get_logger(), "Executing goal with std::async for feedback");
+        // Lazily initialize MoveGroupInterface on first use
+        if (!this->move_group_interface_) {
+            auto node_ptr = std::static_pointer_cast<rclcpp::Node>(shared_from_this());
+            this->move_group_interface_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "ur5_arm");
+        }
+
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<GoToPose::Result>();
 
-        this->move_group_interface_.setPoseTarget(goal->target_pose.pose);
+        this->move_group_interface_->setPoseTarget(goal->target_pose.pose);
 
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-        bool success = (this->move_group_interface_.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
-
-        if (!success) {
+        if (this->move_group_interface_->plan(my_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = false;
             result->message = "Planning failed";
             goal_handle->abort(result);
@@ -79,14 +83,17 @@ private:
             return;
         }
 
-        // Use asyncExecute to allow feedback publishing during execution
-        auto future = this->move_group_interface_.asyncExecute(my_plan);
-        rclcpp::Rate loop_rate(10); // 10 Hz
+        // Launch the blocking execute call in a separate thread
+        auto future = std::async(std::launch::async, [this, my_plan]() {
+            return this->move_group_interface_->execute(my_plan);
+        });
+
+        rclcpp::Rate loop_rate(10); 
         auto feedback = std::make_shared<GoToPose::Feedback>();
 
         while (future.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready) {
             if (goal_handle->is_canceling()) {
-                this->move_group_interface_.stop();
+                this->move_group_interface_->stop();
                 result->success = false;
                 result->message = "Action Canceled";
                 goal_handle->canceled(result);
@@ -94,24 +101,20 @@ private:
                 return;
             }
 
-            // Publish feedback
-            feedback->current_pose = *this->move_group_interface_.getCurrentPose();
+            feedback->current_pose = this->move_group_interface_->getCurrentPose();
             goal_handle->publish_feedback(feedback);
             loop_rate.sleep();
         }
 
-        // Execution finished, check the final result
         moveit::core::MoveItErrorCode final_code = future.get();
         if (final_code == moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = true;
             result->message = "Goal reached successfully";
             goal_handle->succeed(result);
-            RCLCPP_INFO(this->get_logger(), "GoToPose Goal Succeeded");
         } else {
             result->success = false;
-            result->message = "Execution failed with error code: " + std::to_string(final_code.val);
+            result->message = "Execution failed";
             goal_handle->abort(result);
-            RCLCPP_ERROR(this->get_logger(), "GoToPose Execution failed with error code %d", final_code.val);
         }
     }
 };
