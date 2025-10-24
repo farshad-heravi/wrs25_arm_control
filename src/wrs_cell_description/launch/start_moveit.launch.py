@@ -7,7 +7,6 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 
 def generate_launch_description():
-    # Declare arguments
     declared_arguments = [
         DeclareLaunchArgument(
             'use_sim_time',
@@ -16,18 +15,15 @@ def generate_launch_description():
         ),
     ]
 
-    # Get MoveIt Config
     moveit_config = (
         MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
         .to_moveit_configs()
     )
 
-    # RViz config file
     rviz_config = PathJoinSubstitution(
         [FindPackageShare("wrs_env_v2_moveit_config"), "config", "moveit.rviz"]
     )
 
-    # Robot State Publisher
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -35,7 +31,6 @@ def generate_launch_description():
         parameters=[moveit_config.robot_description],
     )
 
-    # Controller Manager Node
     controller_manager_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -68,7 +63,6 @@ def generate_launch_description():
         output="screen",
     )
 
-    # Move Group Node
     move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
@@ -80,7 +74,6 @@ def generate_launch_description():
         ],
     )
 
-    # RViz Node
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -97,9 +90,8 @@ def generate_launch_description():
         ],
     )
 
-    # Group MoveIt nodes with a TimerAction
     moveit_nodes_timer = TimerAction(
-        period=4.0,  # Increased delay to 5 seconds
+        period=4.0,
         actions=[GroupAction(
             actions=[
                 move_group_node,
