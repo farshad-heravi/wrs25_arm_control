@@ -1,0 +1,9 @@
+# Goal: The desired joint position for the gripper
+float64 position
+---
+# Result: True if successful
+bool success
+string message
+---
+# Feedback: The current joint position
+float64 current_position

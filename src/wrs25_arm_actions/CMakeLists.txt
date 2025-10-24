@@ -17,6 +17,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
+  "action/GripperControl.action"
   DEPENDENCIES geometry_msgs
 )
 
@@ -53,6 +54,37 @@ ament_target_dependencies(go_to_pose_action_client
 target_link_libraries(go_to_pose_action_client ${PROJECT_NAME}__rosidl_typesupport_cpp)
 install(TARGETS go_to_pose_action_client
   DESTINATION lib/${PROJECT_NAME})
+
+# --- Add rules for the gripper action server component ---
+add_library(gripper_control_action_server SHARED src/gripper_control_action_server.cpp)
+target_include_directories(gripper_control_action_server PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp>
+)
+ament_target_dependencies(gripper_control_action_server
+  rclcpp
+  rclcpp_action
+  rclcpp_components
+  trajectory_msgs
+  sensor_msgs
+)
+target_link_libraries(gripper_control_action_server ${PROJECT_NAME}__rosidl_typesupport_cpp)
+install(TARGETS gripper_control_action_server
+  DESTINATION lib/${PROJECT_NAME})
+
+# --- Add rules for the gripper action client executable ---
+add_executable(gripper_control_action_client src/gripper_control_action_client.cpp)
+target_include_directories(gripper_control_action_client PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp>
+)
+ament_target_dependencies(gripper_control_action_client
+  rclcpp
+  rclcpp_action
+)
+target_link_libraries(gripper_control_action_client ${PROJECT_NAME}__rosidl_typesupport_cpp)
+install(TARGETS gripper_control_action_client
+  DESTINATION lib/${PROJECT_NAME})
+
+
 
 
 install(
