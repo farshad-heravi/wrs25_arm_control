@@ -71,30 +71,47 @@ private:
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         bool success = (this->move_group_interface_.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
 
-        if (goal_handle->is_canceling()) {
-            goal_handle->canceled(result);
-            RCLCPP_INFO(this->get_logger(), "Goal canceled");
-            return;
-        }
-
-        if(success) {
-            RCLCPP_INFO(this->get_logger(), "Planning successful, executing...");
-            if(this->move_group_interface_.execute(my_plan) == moveit::core::MoveItErrorCode::SUCCESS){
-                result->success = true;
-                result->message = "Goal reached successfully";
-                goal_handle->succeed(result);
-                RCLCPP_INFO(this->get_logger(), "Goal Succeeded");
-            } else {
-                result->success = false;
-                result->message = "Execution failed";
-                goal_handle->abort(result);
-                RCLCPP_ERROR(this->get_logger(), "Execution failed");
-            }
-        } else {
+        if (!success) {
             result->success = false;
             result->message = "Planning failed";
             goal_handle->abort(result);
             RCLCPP_ERROR(this->get_logger(), "Planning failed");
+            return;
+        }
+
+        // Use asyncExecute to allow feedback publishing during execution
+        auto future = this->move_group_interface_.asyncExecute(my_plan);
+        rclcpp::Rate loop_rate(10); // 10 Hz
+        auto feedback = std::make_shared<GoToPose::Feedback>();
+
+        while (future.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready) {
+            if (goal_handle->is_canceling()) {
+                this->move_group_interface_.stop();
+                result->success = false;
+                result->message = "Action Canceled";
+                goal_handle->canceled(result);
+                RCLCPP_INFO(this->get_logger(), "GoToPose goal canceled");
+                return;
+            }
+
+            // Publish feedback
+            feedback->current_pose = *this->move_group_interface_.getCurrentPose();
+            goal_handle->publish_feedback(feedback);
+            loop_rate.sleep();
+        }
+
+        // Execution finished, check the final result
+        moveit::core::MoveItErrorCode final_code = future.get();
+        if (final_code == moveit::core::MoveItErrorCode::SUCCESS) {
+            result->success = true;
+            result->message = "Goal reached successfully";
+            goal_handle->succeed(result);
+            RCLCPP_INFO(this->get_logger(), "GoToPose Goal Succeeded");
+        } else {
+            result->success = false;
+            result->message = "Execution failed with error code: " + std::to_string(final_code.val);
+            goal_handle->abort(result);
+            RCLCPP_ERROR(this->get_logger(), "GoToPose Execution failed with error code %d", final_code.val);
         }
     }
 };

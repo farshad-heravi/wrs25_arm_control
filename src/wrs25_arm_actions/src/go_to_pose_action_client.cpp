@@ -56,7 +56,12 @@ private:
         GoalHandleGoToPose::SharedPtr,
         const std::shared_ptr<const GoToPose::Feedback> feedback)
     {
-        RCLCPP_INFO(this->get_logger(), "Feedback received: Current pose is approximately at z = %f", feedback->current_pose.pose.position.z);
+        RCLCPP_INFO(
+            this->get_logger(), 
+            "Feedback received: Current pose: [x: %.2f, y: %.2f, z: %.2f]", 
+            feedback->current_pose.pose.position.x,
+            feedback->current_pose.pose.position.y,
+            feedback->current_pose.pose.position.z);
     }
 
     void result_callback(const GoalHandleGoToPose::WrappedResult & result)
