@@ -71,6 +71,8 @@ def generate_launch_description():
             moveit_config.to_dict(),
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
             {"publish_robot_description_semantic": True},
+            {"default_planner_pipeline": "ompl"},
+            {"log_level": "DEBUG"},
         ],
     )
 

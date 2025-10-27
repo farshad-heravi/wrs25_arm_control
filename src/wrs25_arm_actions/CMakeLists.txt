@@ -37,9 +37,14 @@ ament_target_dependencies(go_to_pose_action_server
 # Link against the action type support library that we generated in this package
 target_link_libraries(go_to_pose_action_server ${PROJECT_NAME}__rosidl_typesupport_cpp)
 
-
 install(TARGETS go_to_pose_action_server
-  DESTINATION lib/${PROJECT_NAME})
+  DESTINATION lib)
+
+rclcpp_components_register_node(
+  go_to_pose_action_server
+  PLUGIN "wrs25_arm_actions::GoToPoseActionServer"
+  EXECUTABLE go_to_pose_action_server_exe
+)
 
 # --- Add rules for the action client executable ---
 add_executable(go_to_pose_action_client src/go_to_pose_action_client.cpp)
@@ -68,8 +73,15 @@ ament_target_dependencies(gripper_control_action_server
   sensor_msgs
 )
 target_link_libraries(gripper_control_action_server ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
 install(TARGETS gripper_control_action_server
-  DESTINATION lib/${PROJECT_NAME})
+  DESTINATION lib)
+
+rclcpp_components_register_node(
+  gripper_control_action_server
+  PLUGIN "wrs25_arm_actions::GripperControlActionServer"
+  EXECUTABLE gripper_control_action_server_exe
+)
 
 # --- Add rules for the gripper action client executable ---
 add_executable(gripper_control_action_client src/gripper_control_action_client.cpp)

@@ -49,21 +49,18 @@ private:
     {
         RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
         (void)goal_handle;
-        // Here you would add logic to stop the robot's movement
         return rclcpp_action::CancelResponse::ACCEPT;
     }
 
     void handle_accepted(const std::shared_ptr<GoalHandleGoToPose> goal_handle)
     {
         using namespace std::placeholders;
-        // Execute the action in a separate thread to avoid blocking the main executor
         std::thread{std::bind(&GoToPoseActionServer::execute, this, _1), goal_handle}.detach();
     }
 
     void execute(const std::shared_ptr<GoalHandleGoToPose> goal_handle)
     {
         RCLCPP_INFO(this->get_logger(), "Executing goal with std::async for feedback");
-        // Lazily initialize MoveGroupInterface on first use
         if (!this->move_group_interface_) {
             auto node_ptr = std::static_pointer_cast<rclcpp::Node>(shared_from_this());
             this->move_group_interface_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "ur5_arm");
@@ -72,7 +69,7 @@ private:
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<GoToPose::Result>();
 
-        this->move_group_interface_->setPoseTarget(goal->target_pose.pose);
+        this->move_group_interface_->setJointValueTarget(goal->target_pose.pose);
 
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         if (this->move_group_interface_->plan(my_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
@@ -83,7 +80,6 @@ private:
             return;
         }
 
-        // Launch the blocking execute call in a separate thread
         auto future = std::async(std::launch::async, [this, my_plan]() {
             return this->move_group_interface_->execute(my_plan);
         });
