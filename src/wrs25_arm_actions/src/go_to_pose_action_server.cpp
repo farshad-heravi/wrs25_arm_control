@@ -64,6 +64,12 @@ private:
         if (!this->move_group_interface_) {
             auto node_ptr = std::static_pointer_cast<rclcpp::Node>(shared_from_this());
             this->move_group_interface_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "ur5_arm");
+            
+            // Set the planning pipeline to OMPL (supports Cartesian goals)
+            this->move_group_interface_->setPlanningPipelineId("ompl");
+            this->move_group_interface_->setPlannerId("RRTConnect");
+            
+            RCLCPP_INFO(this->get_logger(), "MoveGroupInterface configured with OMPL/RRTConnect planner");
         }
 
         const auto goal = goal_handle->get_goal();
