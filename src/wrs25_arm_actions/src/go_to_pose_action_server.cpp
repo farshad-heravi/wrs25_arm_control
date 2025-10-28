@@ -69,7 +69,7 @@ private:
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<GoToPose::Result>();
 
-        this->move_group_interface_->setJointValueTarget(goal->target_pose.pose);
+        this->move_group_interface_->setPoseTarget(goal->target_pose.pose);
 
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         if (this->move_group_interface_->plan(my_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
