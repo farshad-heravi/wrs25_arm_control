@@ -46,7 +46,7 @@
     <joint name="base_to_ur5_joint" type="fixed">
         <parent link="robot_base"/>
         <child link="${arm_prefix}base_link"/>
-        <origin xyz="0 0.25 0.2" rpy="0 0 ${pi}"/>
+        <origin xyz="0 0.25 0.31" rpy="0 0 ${pi/2}"/>
     </joint>
 
     <!-- Robotiq Coupler -->
