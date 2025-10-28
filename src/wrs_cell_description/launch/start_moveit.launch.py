@@ -19,6 +19,7 @@ def generate_launch_description():
         MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
         .to_moveit_configs()
     )
+    print("Planning pipeline config file:", moveit_config.planning_pipelines)
 
     rviz_config = PathJoinSubstitution(
         [FindPackageShare("wrs_env_v2_moveit_config"), "config", "moveit.rviz"]
@@ -72,6 +73,9 @@ def generate_launch_description():
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
             {"publish_robot_description_semantic": True},
             {"default_planner_pipeline": "ompl"},
+            {"ompl.planning_plugin": "ompl_interface/OMPLPlanner"},
+            {"planning_plugin": "ompl_interface/OMPLPlanner"},
+            {"ompl.default_planner_config": "RRTConnect"},
             {"log_level": "DEBUG"},
         ],
     )
@@ -93,7 +97,7 @@ def generate_launch_description():
     )
 
     moveit_nodes_timer = TimerAction(
-        period=4.0,
+        period=8.0,
         actions=[GroupAction(
             actions=[
                 move_group_node,
