@@ -65,15 +65,19 @@ private:
             auto node_ptr = std::static_pointer_cast<rclcpp::Node>(shared_from_this());
             this->move_group_interface_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "ur5_arm");
             
-            // Set the planning pipeline to OMPL (supports Cartesian goals)
-            this->move_group_interface_->setPlanningPipelineId("ompl");
-            this->move_group_interface_->setPlannerId("RRTConnect");
-            
-            RCLCPP_INFO(this->get_logger(), "MoveGroupInterface configured with OMPL/RRTConnect planner");
+            // Configuration is now handled by MoveIt config files
+            RCLCPP_INFO(this->get_logger(), "MoveGroupInterface initialized for ur5_arm group");
+            RCLCPP_INFO(this->get_logger(), "Planning frame: %s", this->move_group_interface_->getPlanningFrame().c_str());
+            RCLCPP_INFO(this->get_logger(), "End effector link: %s", this->move_group_interface_->getEndEffectorLink().c_str());
         }
 
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<GoToPose::Result>();
+
+        RCLCPP_INFO(this->get_logger(), "Target pose: [%.3f, %.3f, %.3f]", 
+                    goal->target_pose.pose.position.x, 
+                    goal->target_pose.pose.position.y, 
+                    goal->target_pose.pose.position.z);
 
         this->move_group_interface_->setPoseTarget(goal->target_pose.pose);
 
