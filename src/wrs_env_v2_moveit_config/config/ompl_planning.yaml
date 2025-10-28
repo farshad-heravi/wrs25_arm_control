@@ -19,4 +19,16 @@ planner_configs:
     max_nearest_neighbors: 100
     delay_collision_checking: 1
 
-# You can add more planner configurations here
+# Group-specific planner configurations
+ur5_arm:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+    - RRTstar
+    - PRMstar
+
+hand:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+    - RRTstar
