@@ -81,6 +81,31 @@ private:
 
         this->move_group_interface_->setPoseTarget(goal->target_pose.pose);
 
+        // Get the current robot state. We will use this to solve IK for the target pose.
+        moveit::core::RobotStatePtr current_robot_state = this->move_group_interface_->getCurrentState();
+        
+        // Solve Inverse Kinematics (IK) for the target pose and stored in current_robot_state
+        bool ik_success = current_robot_state->setFromIK(
+            current_robot_state->getJointModelGroup(this->move_group_interface_->getName()),
+            goal->target_pose.pose
+        );
+
+        if (!ik_success) {
+            result->success = false;
+            result->message = "Inverse Kinematics failed to find a valid joint solution for the target pose.";
+            goal_handle->abort(result);
+            RCLCPP_ERROR(this->get_logger(), "Inverse Kinematics failed for target pose.");
+            return;
+        }
+
+        // set the joint values as the target for the planner (CHOMP expects joint goals)
+        std::vector<double> joint_values;
+        current_robot_state->copyJointGroupPositions(
+            current_robot_state->getJointModelGroup(this->move_group_interface_->getName()),
+            joint_values
+        );
+        this->move_group_interface_->setJointValueTarget(joint_values);
+
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
         if (this->move_group_interface_->plan(my_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = false;
