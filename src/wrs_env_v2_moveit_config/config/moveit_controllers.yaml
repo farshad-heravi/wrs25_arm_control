@@ -9,7 +9,6 @@ moveit_simple_controller_manager:
 
   ur5_arm_controller:
     type: FollowJointTrajectory
-    action_ns: follow_joint_trajectory
     joints:
       - ur5_shoulder_pan_joint
       - ur5_shoulder_lift_joint
@@ -17,8 +16,9 @@ moveit_simple_controller_manager:
       - ur5_wrist_1_joint
       - ur5_wrist_2_joint
       - ur5_wrist_3_joint
+    action_ns: follow_joint_trajectory
   hand_controller:
     type: FollowJointTrajectory
-    action_ns: follow_joint_trajectory
     joints:
       - ur5_robotiq_85_left_knuckle_joint
+    action_ns: follow_joint_trajectory

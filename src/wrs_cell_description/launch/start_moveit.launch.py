@@ -1,4 +1,6 @@
+import os
 from launch import LaunchDescription
+from launch_param_builder import get_package_share_directory
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, GroupAction, TimerAction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -17,12 +19,27 @@ def generate_launch_description():
 
     moveit_config = (
         MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
+        .robot_description(file_path="config/wrs_cell_v2.urdf.xacro")
+        .robot_description_semantic(file_path="config/wrs_cell_v2.srdf")
+        .trajectory_execution(file_path="config/moveit_controllers.yaml")
+        .robot_description_kinematics(file_path="config/kinematics.yaml")
+        .planning_scene_monitor(
+            publish_robot_description= True, publish_robot_description_semantic=True, publish_planning_scene=True
+        )
+        .planning_pipelines(
+            pipelines=["ompl", "pilz_industrial_motion_planner"],
+            default_planning_pipeline="ompl"
+        )
         .to_moveit_configs()
     )
     print("Planning pipeline config file:", moveit_config.planning_pipelines)
 
     rviz_config = PathJoinSubstitution(
         [FindPackageShare("wrs_env_v2_moveit_config"), "config", "moveit.rviz"]
+    )
+
+    joint_controllers_file = os.path.join(
+        get_package_share_directory('wrs_env_v2_moveit_config'), 'config', 'ros2_controllers.yaml'
     )
 
     robot_state_publisher_node = Node(
@@ -36,8 +53,8 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[
-            {"robot_description": moveit_config.robot_description.get("robot_description")},
-            PathJoinSubstitution([FindPackageShare("wrs_env_v2_moveit_config"), "config", "ros2_controllers.yaml"]),
+            moveit_config.robot_description,
+            joint_controllers_file,
         ],
         output="screen",
     )
@@ -91,8 +108,6 @@ def generate_launch_description():
             moveit_config.robot_description_semantic,
             moveit_config.robot_description_kinematics,
             moveit_config.planning_pipelines,
-            moveit_config.joint_limits,
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
         ],
     )
 

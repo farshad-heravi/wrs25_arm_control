@@ -8,6 +8,13 @@
                 <!-- By default, set up controllers for simulation. This won't work on real hardware -->
                 <plugin>mock_components/GenericSystem</plugin>
             </hardware>
+            <joint name="ur5_robotiq_85_left_knuckle_joint">
+                <command_interface name="position"/>
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['ur5_robotiq_85_left_knuckle_joint']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
             <joint name="ur5_shoulder_pan_joint">
                 <command_interface name="position"/>
                 <state_interface name="position">
@@ -47,13 +54,6 @@
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['ur5_wrist_3_joint']}</param>
-                </state_interface>
-                <state_interface name="velocity"/>
-            </joint>
-            <joint name="ur5_robotiq_85_left_knuckle_joint">
-                <command_interface name="position"/>
-                <state_interface name="position">
-                  <param name="initial_value">${initial_positions['ur5_robotiq_85_left_knuckle_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
