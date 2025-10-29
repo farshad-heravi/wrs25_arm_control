@@ -1,10 +1,10 @@
 # Default initial positions for wrs_cell_v2's ros2_control fake system
 
 initial_positions:
-  ur5_elbow_joint: 0
-  ur5_robotiq_85_left_knuckle_joint: 0
-  ur5_shoulder_lift_joint: 0
-  ur5_shoulder_pan_joint: 0
-  ur5_wrist_1_joint: 0
-  ur5_wrist_2_joint: 0
-  ur5_wrist_3_joint: 0
+  ur5_elbow_joint: 1.2323
+  ur5_robotiq_85_left_knuckle_joint: 0.0
+  ur5_shoulder_lift_joint: -1.0761
+  ur5_shoulder_pan_joint: 0.0347
+  ur5_wrist_1_joint: -1.8398
+  ur5_wrist_2_joint: -1.5621
+  ur5_wrist_3_joint: 0.1041

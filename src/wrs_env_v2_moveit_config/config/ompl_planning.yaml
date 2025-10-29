@@ -1,11 +1,5 @@
 planning_plugin: ompl_interface/OMPLPlanner
 
-request_adapters:
-  - default_planner_request_adapters/AddTimeParameterization
-  - default_planner_request_adapters/FixWorkspaceBounds
-  - default_planner_request_adapters/FixStartStateBounds
-  - default_planner_request_adapters/FixStartStateCollision
-  - default_planner_request_adapters/FixStartStatePathConstraints
 
 # OMPL-specific parameters
 default_planner_config: RRTConnect
@@ -30,16 +24,15 @@ planner_configs:
     delay_collision_checking: 1
 
 # Group-specific planner configurations
-ur5_arm:
-  default_planner_config: RRTConnect
-  planner_configs:
-    - RRTConnect
-    - RRTstar
-    - PRMstar
+    ur5_arm:
+      default_planner_config: RRTConnect
+      planner_configs:
+        - RRTConnect
+        - RRTstar
+        - PRMstar
 
-hand:
-  default_planner_config: RRTConnect
-  planner_configs:
-    - RRTConnect
-    - RRTstar
-    delay_collision_checking: 1
+    hand:
+      default_planner_config: RRTConnect
+      planner_configs:
+        - RRTConnect
+        - RRTstar

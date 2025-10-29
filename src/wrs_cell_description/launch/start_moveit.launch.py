@@ -27,7 +27,7 @@ def generate_launch_description():
             publish_robot_description= True, publish_robot_description_semantic=True, publish_planning_scene=True
         )
         .planning_pipelines(
-            pipelines=["ompl", "pilz_industrial_motion_planner"],
+            pipelines=["chomp", "ompl", "pilz_industrial_motion_planner"],
             default_planning_pipeline="ompl"
         )
         .to_moveit_configs()
@@ -46,7 +46,9 @@ def generate_launch_description():
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="screen",
-        parameters=[moveit_config.robot_description],
+        parameters=[
+            moveit_config.robot_description,
+        ],
     )
 
     controller_manager_node = Node(
@@ -88,11 +90,13 @@ def generate_launch_description():
         parameters=[
             moveit_config.to_dict(),
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
-            {"publish_robot_description_semantic": True},
-            {"default_planner_pipeline": "ompl"},
-            {"ompl.planning_plugin": "ompl_interface/OMPLPlanner"},
-            {"planning_plugin": "ompl_interface/OMPLPlanner"},
-            {"ompl.default_planner_config": "RRTConnect"},
+            {"trajectory_execution.allowed_start_tolerance": 0.05},
+            {"trajectory_execution.allowed_goal_duration_margin": 0.5},
+            # {"publish_robot_description_semantic": True},
+            # {"default_planner_pipeline": "ompl"},
+            # {"ompl.planning_plugin": "ompl_interface/OMPLPlanner"},
+            # {"planning_plugin": "ompl_interface/OMPLPlanner"},
+            # {"ompl.default_planner_config": "RRTConnect"},
             {"log_level": "DEBUG"},
         ],
     )
@@ -103,12 +107,7 @@ def generate_launch_description():
         name="rviz2",
         output="screen",
         arguments=["-d", rviz_config],
-        parameters=[
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            moveit_config.planning_pipelines,
-        ],
+        parameters=[moveit_config.to_dict()],
     )
 
     moveit_nodes_timer = TimerAction(

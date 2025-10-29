@@ -292,7 +292,7 @@
       </xacro:cylinder_inertial>
     </link>
 
-    <joint name="${prefix}ee_fixed_joint" type="fixed">
+    <!-- <joint name="${prefix}ee_fixed_joint" type="fixed">
       <parent link="${prefix}wrist_3_link" />
       <child link = "${prefix}ee_link" />
       <origin xyz="0.0 ${wrist_3_length} 0.0" rpy="0.0 0.0 ${pi/2.0}" />
@@ -305,15 +305,11 @@
         </geometry>
         <origin rpy="0 0 0" xyz="-0.01 0 0"/>
       </collision>
-    </link>
+    </link> -->
 
     <!-- ROS base_link to UR 'Base' Coordinates transform -->
     <link name="${prefix}base"/>
     <joint name="${prefix}base_link-base_fixed_joint" type="fixed">
-      <!-- NOTE: this rotation is only needed as long as base_link itself is
-                 not corrected wrt the real robot (ie: rotated over 180
-                 degrees)
-      -->
       <origin xyz="0 0 0" rpy="0 0 ${-pi}"/>
       <parent link="${prefix}base_link"/>
       <child link="${prefix}base"/>
