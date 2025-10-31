@@ -101,7 +101,7 @@ int main(int argc, char ** argv)
     param_client_node->declare_parameter<double>("orz", 0.0);
 
     geometry_msgs::msg::PoseStamped goal_pose;
-    goal_pose.header.frame_id = "world";
+    goal_pose.header.frame_id = "ur5_base_link";
     goal_pose.pose.position.x = param_client_node->get_parameter("posx").as_double();
     goal_pose.pose.position.y = param_client_node->get_parameter("posy").as_double();
     goal_pose.pose.position.z = param_client_node->get_parameter("posz").as_double();
