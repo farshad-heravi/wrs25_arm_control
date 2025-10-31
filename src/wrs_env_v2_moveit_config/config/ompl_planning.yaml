@@ -7,32 +7,33 @@ default_planner_config: RRTConnect
 planner_configs:
   RRTConnect:
     type: geometric::RRTConnect
-    range: 0.0
+    range: 0.1  
     longest_valid_segment_fraction: 0.005
     max_nearest_neighbors: 100
   RRTstar:
     type: geometric::RRTstar
-    range: 0.0
+    range: 0.1  
     longest_valid_segment_fraction: 0.005
     max_nearest_neighbors: 100
     goal_bias: 0.05
     delay_collision_checking: 1
   PRMstar:
     type: geometric::PRMstar
-    range: 0.0
+    range: 0.1  
     max_nearest_neighbors: 100
     delay_collision_checking: 1
 
 # Group-specific planner configurations
-    ur5_arm:
-      default_planner_config: RRTConnect
-      planner_configs:
-        - RRTConnect
-        - RRTstar
-        - PRMstar
+ur5_arm:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+    - RRTstar
+    - PRMstar
 
-    hand:
-      default_planner_config: RRTConnect
-      planner_configs:
-        - RRTConnect
-        - RRTstar
+hand:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+    - RRTstar
+

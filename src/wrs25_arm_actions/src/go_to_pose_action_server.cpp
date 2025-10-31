@@ -79,41 +79,38 @@ private:
                     goal->target_pose.pose.position.y, 
                     goal->target_pose.pose.position.z);
 
-        this->move_group_interface_->setPoseTarget(goal->target_pose.pose);
+        // Stage 1: Use OMPL to find a collision-free IK solution for the pose goal.
+        RCLCPP_INFO(this->get_logger(), "Stage 1: Planning with OMPL to find a valid joint goal.");
+        this->move_group_interface_->setPlanningPipelineId("ompl");
+        this->move_group_interface_->setPoseTarget(goal->target_pose);
 
-        // Get the current robot state. We will use this to solve IK for the target pose.
-        moveit::core::RobotStatePtr current_robot_state = this->move_group_interface_->getCurrentState();
-        
-        // Solve Inverse Kinematics (IK) for the target pose and stored in current_robot_state
-        bool ik_success = current_robot_state->setFromIK(
-            current_robot_state->getJointModelGroup(this->move_group_interface_->getName()),
-            goal->target_pose.pose
-        );
-
-        if (!ik_success) {
+        moveit::planning_interface::MoveGroupInterface::Plan ompl_plan;
+        if (this->move_group_interface_->plan(ompl_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = false;
-            result->message = "Inverse Kinematics failed to find a valid joint solution for the target pose.";
+            result->message = "OMPL failed to find a collision-free path to the target pose.";
             goal_handle->abort(result);
-            RCLCPP_ERROR(this->get_logger(), "Inverse Kinematics failed for target pose.");
+            RCLCPP_ERROR(this->get_logger(), "OMPL planning failed.");
             return;
         }
+        RCLCPP_INFO(this->get_logger(), "OMPL planning succeeded. Extracting joint goal.");
 
-        // set the joint values as the target for the planner (CHOMP expects joint goals)
-        std::vector<double> joint_values;
-        current_robot_state->copyJointGroupPositions(
-            current_robot_state->getJointModelGroup(this->move_group_interface_->getName()),
-            joint_values
-        );
-        this->move_group_interface_->setJointValueTarget(joint_values);
+        // Extract the joint values from the end of the OMPL plan.
+        std::vector<double> chomp_joint_goal = ompl_plan.trajectory_.joint_trajectory.points.back().positions;
 
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        // Stage 2: Use CHOMP to plan a smooth trajectory to the joint goal found by OMPL.
+        RCLCPP_INFO(this->get_logger(), "Stage 2: Planning with CHOMP to the OMPL-found joint goal.");
+        this->move_group_interface_->setPlanningPipelineId("chomp"); // Assuming your default is chomp, but being explicit is good.
+        this->move_group_interface_->setJointValueTarget(chomp_joint_goal);
+        
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan; // This will be the final CHOMP plan
         if (this->move_group_interface_->plan(my_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = false;
-            result->message = "Planning failed";
+            result->message = "CHOMP planning failed to the OMPL-found joint goal.";
             goal_handle->abort(result);
-            RCLCPP_ERROR(this->get_logger(), "Planning failed");
+            RCLCPP_ERROR(this->get_logger(), "CHOMP planning failed.");
             return;
         }
+        RCLCPP_INFO(this->get_logger(), "CHOMP planning succeeded.");
 
         auto future = std::async(std::launch::async, [this, my_plan]() {
             return this->move_group_interface_->execute(my_plan);

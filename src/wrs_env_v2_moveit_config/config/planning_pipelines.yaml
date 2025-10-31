@@ -1,5 +1,3 @@
-planning_plugin: ompl_interface/OMPLPlanner
-
 planning_pipelines:
   - name: ompl
     planning_plugin: ompl_interface/OMPLPlanner
@@ -10,41 +8,7 @@ planning_pipelines:
       - default_planner_request_adapters/FixStartStateCollision
       - default_planner_request_adapters/FixStartStatePathConstraints
 
-ompl:
-  # RRTConnect is a good default for many problems
-  default_planner_config: RRTConnect
+  # The CHOMP pipeline is defined separately in chomp_planning.yaml, so no need to define it here unless you want to add adapters.
+  # - name: chomp
+  #   planning_plugin: chomp_interface/CHOMPPlanner
 
-  # You can define multiple planner configurations
-  RRTConnect:
-    type: geometric::RRTConnect
-    range: 0.0
-    longest_valid_segment_fraction: 0.005
-    max_nearest_neighbors: 100
-
-  RRTstar:
-    type: geometric::RRTstar
-    range: 0.0
-    longest_valid_segment_fraction: 0.005
-    max_nearest_neighbors: 100
-    goal_bias: 0.05
-    delay_collision_checking: 1
-
-  PRMstar:
-    type: geometric::PRMstar
-    range: 0.0
-    max_nearest_neighbors: 100
-    delay_collision_checking: 1
-
-  # Group-specific planner configurations
-  ur5_arm:
-    default_planner_config: RRTConnect
-    planner_configs:
-      - RRTConnect
-      - RRTstar
-      - PRMstar
-  
-  hand:
-    default_planner_config: RRTConnect
-    planner_configs:
-      - RRTConnect
-      - RRTstar
