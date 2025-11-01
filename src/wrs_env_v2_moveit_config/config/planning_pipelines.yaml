@@ -1,12 +1,12 @@
-planning_pipelines:
-  - name: ompl
-    planning_plugin: ompl_interface/OMPLPlanner
-    request_adapters:
-      - default_planner_request_adapters/AddTimeParameterization
-      - default_planner_request_adapters/FixWorkspaceBounds
-      - default_planner_request_adapters/FixStartStateBounds
-      - default_planner_request_adapters/FixStartStateCollision
-      - default_planner_request_adapters/FixStartStatePathConstraints
+# planning_pipelines:
+#   - name: ompl
+#     planning_plugin: ompl_interface/OMPLPlanner
+#     request_adapters:
+#       - default_planner_request_adapters/AddRuckigTimeParameterization
+#       - default_planner_request_adapters/FixWorkspaceBounds
+#       - default_planner_request_adapters/FixStartStateBounds
+#       - default_planner_request_adapters/FixStartStateCollision
+#       - default_planner_request_adapters/FixStartStatePathConstraints
 
   # The CHOMP pipeline is defined separately in chomp_planning.yaml, so no need to define it here unless you want to add adapters.
   # - name: chomp
