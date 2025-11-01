@@ -18,19 +18,16 @@
     <link name="robot_base">
         <visual>
             <geometry>
-                <box size="1.0 0.8 0.4"/>
+                <mesh filename="package://robot_description/meshes/cobot_station/visual/BancaleUR.dae" />
             </geometry>
-            <material name="grey">
-                <color rgba="0.5 0.5 0.5 1.0"/>
-            </material>
         </visual>
         <collision>
             <geometry>
-                <box size="0.8 0.8 0.4"/>
+                <mesh filename="package://robot_description/meshes/cobot_station/collision/BancaleUR_collision.stl" />
             </geometry>
         </collision>
         <inertial>
-            <mass value="50"/>
+            <mass value="275.0"/>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
         </inertial>
@@ -39,7 +36,7 @@
     <joint name="world_to_base_joint" type="fixed">
         <parent link="world"/>
         <child link="robot_base"/>
-        <origin xyz="0 0 0.2" rpy="0 0 0"/>
+        <origin xyz="0 0 0.0" rpy="0 0 0"/>
     </joint>
 
     <!-- Attach UR5 to the base -->
