@@ -33,13 +33,22 @@ This method allows you to have the latest versions of the packages.
     source install/setup.bash
     ```
 
-## Usage
+## Launches
 
-To illustrate the work cell
+### View the system in RViz
 
 ```
 ros2 launch wrs_cell_description start_rviz.launch.py
 ```
+### MoveIt Launch
+```
+ros2 launch wrs_cell_description start_moveit.launch.py
+```
+### Launch Action Servers
+```
+ros2 launch wrs25_arm_actions go_to_pose_action.launch.py
+```
+
 
 ## Actions
 
@@ -56,8 +65,10 @@ This action moves the arm to a desired pose.
 **Goal:**
 
 *   `target_pose` (`geometry_msgs/PoseStamped`): The desired pose for the end-effector.
+*   `planning_pipeline_id` (`string`): e.g., "ompl", "pilz_industrial_motion_planner", "chomp"
+*   `planner_id` (`string`): e.g. "RRTkConfigDefault", "LIN", "PTP", "CHOMP"
 
-**Example:**
+**Example: [to be revised]**
 
 ```bash
 ros2 action send_goal /go_to_pose wrs25_arm_actions/action/GoToPose '{ "target_pose": { "header": { "frame_id": "world" }, "pose": { "position": { "x": 0.3, "y": 0.3, "z": 0.3 }, "orientation": { "w": 1.0 } } } }'
@@ -86,14 +97,6 @@ This action controls the gripper.
     ros2 action send_goal /gripper_control wrs25_arm_actions/action/GripperControl '{ "position": 0.8 }'
     ```
 
-### Launching the Action Servers
-
-To use the actions, you need to launch the action servers:
-
-```bash
-ros2 launch wrs25_arm_actions go_to_pose_action.launch.py
-```
-
 ### Using the Action Clients
 
 Alternatively, you can use the provided action clients to send goals from the command line.
@@ -103,9 +106,21 @@ Alternatively, you can use the provided action clients to send goals from the co
     This client sends a goal to the `GoToPose` action server.
 
     **Example:**
-
+    for ompl:
     ```bash
-    ros2 run wrs25_arm_actions go_to_pose_action_client --ros-args -p posx:=0.3 -p posy:=0.3 -p posz:=0.3
+    ros2 run wrs25_arm_actions go_to_pose_action_client_node \
+                --ros-args -p posx:=0.5 -p posy:=0.1 -p posz:=0.8 \
+                -p orx:=1.0 -p ory:= 0.0 -p orz:=0.0 -p orw:=0.0 \
+               -p pipeline:="ompl" \
+               -p planner:="RRTConnectkConfigDefault"
+    ```
+    for pilz-LIN
+    ```
+    ros2 run wrs25_arm_actions go_to_pose_action_client_node \
+                --ros-args -p posx:=0.5 -p posy:=0.1 -p posz:=0.8 \
+               -p pipeline:="pilz_industrial_motion_planner" \
+               -p orx:=1.0 -p ory:= 0.0 -p orz:=0.0 -p orw:=0.0 \
+               -p planner:="LIN"
     ```
 
 *   **`gripper_control_action_client`**
