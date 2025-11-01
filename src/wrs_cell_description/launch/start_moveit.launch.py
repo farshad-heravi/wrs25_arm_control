@@ -12,7 +12,7 @@ def generate_launch_description():
     declared_arguments = [
         DeclareLaunchArgument(
             'use_sim_time',
-            default_value='true',
+            default_value='false',
             description='Use simulation time',
         ),
     ]
@@ -23,12 +23,13 @@ def generate_launch_description():
         .robot_description_semantic(file_path="config/wrs_cell_v2.srdf")
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
         .robot_description_kinematics(file_path="config/kinematics.yaml")
+        .joint_limits(file_path="config/joint_limits.yaml")
         .planning_scene_monitor(
             publish_robot_description= True, publish_robot_description_semantic=True, publish_planning_scene=True
         )
         .planning_pipelines(
             pipelines=["chomp", "ompl", "pilz_industrial_motion_planner"],
-            default_planning_pipeline="chomp"
+            default_planning_pipeline="pilz_industrial_motion_planner"
         )
         .to_moveit_configs()
     )
@@ -48,6 +49,7 @@ def generate_launch_description():
         output="screen",
         parameters=[
             moveit_config.robot_description,
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
         ],
     )
 
@@ -57,6 +59,7 @@ def generate_launch_description():
         parameters=[
             moveit_config.robot_description,
             joint_controllers_file,
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
         ],
         output="screen",
     )
