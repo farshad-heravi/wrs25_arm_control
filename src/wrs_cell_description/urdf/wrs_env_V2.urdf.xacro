@@ -4,12 +4,30 @@
     <xacro:property name="arm_prefix" value="ur5_"/>
 
     <!-- ur5 -->
+    <xacro:arg name="use_fake_hardware" default="true"/>
+    <xacro:arg name="fake_sensor_commands" default="true"/>
+    <!-- Include official UR5e description from ur_description package -->
+    <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+
+
     <xacro:include filename="$(find robot_description)/urdf/ur5.urdf.xacro" />
     <!-- gripper -->
     <xacro:include filename="$(find robot_description)/urdf/robotiq/robotiq_85_gripper.urdf.xacro" />
 
     <!-- arm -->
-    <xacro:ur5_robot prefix="${arm_prefix}" joint_limited="false"/>
+    <!-- Instantiate UR5e arm with official macro -->
+    <xacro:ur_robot
+        name="ur5e"
+        tf_prefix="${arm_prefix}"
+        parent="robot_base"
+        use_fake_hardware="$(arg use_fake_hardware)"
+        fake_sensor_commands="$(arg fake_sensor_commands)"
+        joint_limits_parameters_file="$(find ur_description)/config/ur5e/joint_limits.yaml"
+        kinematics_parameters_file="$(find ur_description)/config/ur5e/default_kinematics.yaml"
+        physical_parameters_file="$(find ur_description)/config/ur5e/physical_parameters.yaml"
+        visual_parameters_file="$(find ur_description)/config/ur5e/visual_parameters.yaml">
+        <origin xyz="-0.1 -0.1 0" rpy="0 0 0"/>
+    </xacro:ur_robot>
 
     <!-- World link -->
     <link name="world" />
