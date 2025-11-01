@@ -14,6 +14,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
@@ -55,6 +57,8 @@ ament_target_dependencies(go_to_pose_action_client
   rclcpp
   rclcpp_action
   geometry_msgs
+  visualization_msgs
+  tf2
 )
 target_link_libraries(go_to_pose_action_client ${PROJECT_NAME}__rosidl_typesupport_cpp)
 install(TARGETS go_to_pose_action_client
