@@ -1,5 +1,7 @@
 # Goal definition
 geometry_msgs/PoseStamped target_pose
+string planning_pipeline_id # e.g., "ompl", "pilz_industrial_motion_planner", "chomp"
+string planner_id # e.g., "RRTkConfigDefault", "LIN", "PTP", "CHOMP"
 ---
 # Result definition
 bool success

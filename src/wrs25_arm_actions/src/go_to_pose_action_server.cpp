@@ -20,6 +20,7 @@ public:
     {
         using namespace std::placeholders;
 
+        // Initialize MoveGroupInterface as a shared pointer to be set up on first goal execution.
         this->action_server_ = rclcpp_action::create_server<GoToPose>(
             this,
             "go_to_pose",
@@ -27,7 +28,7 @@ public:
             std::bind(&GoToPoseActionServer::handle_cancel, this, _1),
             std::bind(&GoToPoseActionServer::handle_accepted, this, _1));
         
-        RCLCPP_INFO(this->get_logger(), "GoToPoseActionServer has been initialized.");
+        RCLCPP_INFO(this->get_logger(), "GoToPoseActionServer has been initialized and is awaiting goals.");
     }
 
 private:
@@ -38,9 +39,10 @@ private:
         const rclcpp_action::GoalUUID & uuid,
         std::shared_ptr<const GoToPose::Goal> goal)
     {
-        RCLCPP_INFO(this->get_logger(), "Received goal request");
+        RCLCPP_INFO(this->get_logger(), "Received goal request. Pipeline: '%s', Planner: '%s'",
+                    goal->planning_pipeline_id.c_str(),
+                    goal->planner_id.c_str());
         (void)uuid;
-        (void)goal; // Mark as unused to prevent compiler warnings
         return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
     }
 
@@ -55,20 +57,19 @@ private:
     void handle_accepted(const std::shared_ptr<GoalHandleGoToPose> goal_handle)
     {
         using namespace std::placeholders;
+        // Start a separate thread to execute the goal to avoid blocking the action server
         std::thread{std::bind(&GoToPoseActionServer::execute, this, _1), goal_handle}.detach();
     }
 
     void execute(const std::shared_ptr<GoalHandleGoToPose> goal_handle)
     {
-        RCLCPP_INFO(this->get_logger(), "Executing goal with std::async for feedback");
+        // 1. Setup MoveIt Interface (if not already done)
         if (!this->move_group_interface_) {
+            // Need a Node pointer to initialize MoveGroupInterface
             auto node_ptr = std::static_pointer_cast<rclcpp::Node>(shared_from_this());
+            // Replace "ur5_arm" with your actual planning group name if different
             this->move_group_interface_ = std::make_shared<moveit::planning_interface::MoveGroupInterface>(node_ptr, "ur5_arm");
-            
-            // Configuration is now handled by MoveIt config files
-            RCLCPP_INFO(this->get_logger(), "MoveGroupInterface initialized for ur5_arm group");
-            RCLCPP_INFO(this->get_logger(), "Planning frame: %s", this->move_group_interface_->getPlanningFrame().c_str());
-            RCLCPP_INFO(this->get_logger(), "End effector link: %s", this->move_group_interface_->getEndEffectorLink().c_str());
+            RCLCPP_INFO(this->get_logger(), "MoveGroupInterface initialized for ur5_arm group.");
         }
 
         const auto goal = goal_handle->get_goal();
@@ -79,39 +80,42 @@ private:
                     goal->target_pose.pose.position.y, 
                     goal->target_pose.pose.position.z);
 
-        // Stage 1: Use OMPL to find a collision-free IK solution for the pose goal.
-        RCLCPP_INFO(this->get_logger(), "Stage 1: Planning with OMPL to find a valid joint goal.");
-        this->move_group_interface_->setPlanningPipelineId("ompl");
-        this->move_group_interface_->setPoseTarget(goal->target_pose);
-
-        moveit::planning_interface::MoveGroupInterface::Plan ompl_plan;
-        if (this->move_group_interface_->plan(ompl_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
-            result->success = false;
-            result->message = "OMPL failed to find a collision-free path to the target pose.";
-            goal_handle->abort(result);
-            RCLCPP_ERROR(this->get_logger(), "OMPL planning failed.");
-            return;
-        }
-        RCLCPP_INFO(this->get_logger(), "OMPL planning succeeded. Extracting joint goal.");
-
-        // Extract the joint values from the end of the OMPL plan.
-        std::vector<double> chomp_joint_goal = ompl_plan.trajectory_.joint_trajectory.points.back().positions;
-
-        // Stage 2: Use CHOMP to plan a smooth trajectory to the joint goal found by OMPL.
-        RCLCPP_INFO(this->get_logger(), "Stage 2: Planning with CHOMP to the OMPL-found joint goal.");
-        this->move_group_interface_->setPlanningPipelineId("chomp"); // Assuming your default is chomp, but being explicit is good.
-        this->move_group_interface_->setJointValueTarget(chomp_joint_goal);
+        // 2. Dynamic Planner Configuration
         
-        moveit::planning_interface::MoveGroupInterface::Plan my_plan; // This will be the final CHOMP plan
+        // Set Planning Pipeline ID if provided in the goal
+        if (!goal->planning_pipeline_id.empty()) {
+            this->move_group_interface_->setPlanningPipelineId(goal->planning_pipeline_id);
+            RCLCPP_INFO(this->get_logger(), "Set Planning Pipeline ID to: %s", goal->planning_pipeline_id.c_str());
+        } else {
+            // Fallback to MoveIt's default pipeline if none is specified
+            RCLCPP_INFO(this->get_logger(), "Using default planning pipeline.");
+        }
+
+        // Set Planner ID if provided in the goal
+        if (!goal->planner_id.empty()) {
+            this->move_group_interface_->setPlannerId(goal->planner_id);
+            RCLCPP_INFO(this->get_logger(), "Set Planner ID to: %s", goal->planner_id.c_str());
+        } else {
+            // Fallback to the default planner within the selected pipeline
+            RCLCPP_INFO(this->get_logger(), "Using default planner ID within the selected pipeline.");
+        }
+
+        // 3. Set Target and Plan
+        this->move_group_interface_->setPoseTarget(goal->target_pose);
+        
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        
+        // Attempt planning
         if (this->move_group_interface_->plan(my_plan) != moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = false;
-            result->message = "CHOMP planning failed to the OMPL-found joint goal.";
+            result->message = "Planning failed with requested configuration.";
             goal_handle->abort(result);
-            RCLCPP_ERROR(this->get_logger(), "CHOMP planning failed.");
+            RCLCPP_ERROR(this->get_logger(), "Planning failed for target pose.");
             return;
         }
-        RCLCPP_INFO(this->get_logger(), "CHOMP planning succeeded.");
+        RCLCPP_INFO(this->get_logger(), "Planning succeeded.");
 
+        // 4. Execution and Feedback Loop
         auto future = std::async(std::launch::async, [this, my_plan]() {
             return this->move_group_interface_->execute(my_plan);
         });
@@ -123,9 +127,9 @@ private:
             if (goal_handle->is_canceling()) {
                 this->move_group_interface_->stop();
                 result->success = false;
-                result->message = "Action Canceled";
+                result->message = "Action Canceled by user request.";
                 goal_handle->canceled(result);
-                RCLCPP_INFO(this->get_logger(), "GoToPose goal canceled");
+                RCLCPP_INFO(this->get_logger(), "GoToPose goal canceled.");
                 return;
             }
 
@@ -134,15 +138,18 @@ private:
             loop_rate.sleep();
         }
 
+        // 5. Final Result
         moveit::core::MoveItErrorCode final_code = future.get();
         if (final_code == moveit::core::MoveItErrorCode::SUCCESS) {
             result->success = true;
-            result->message = "Goal reached successfully";
+            result->message = "Goal reached successfully.";
             goal_handle->succeed(result);
+            RCLCPP_INFO(this->get_logger(), "Goal execution succeeded.");
         } else {
             result->success = false;
-            result->message = "Execution failed";
+            result->message = "Execution failed with code: " + std::to_string(final_code.val);
             goal_handle->abort(result);
+            RCLCPP_ERROR(this->get_logger(), "Goal execution failed.");
         }
     }
 };
