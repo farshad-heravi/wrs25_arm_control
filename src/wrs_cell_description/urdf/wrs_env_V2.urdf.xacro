@@ -9,13 +9,13 @@
     <!-- Include official UR5e description from ur_description package -->
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
 
-
-    <xacro:include filename="$(find robot_description)/urdf/ur5.urdf.xacro" />
     <!-- gripper -->
     <xacro:include filename="$(find robot_description)/urdf/robotiq/robotiq_85_gripper.urdf.xacro" />
 
     <!-- arm -->
     <!-- Instantiate UR5e arm with official macro -->
+    <xacro:arg name="initial_positions_file" default="$(find wrs_env_v2_moveit_config)/config/initial_positions.yaml" />
+    <xacro:property name="initial_positions" value="${xacro.load_yaml('$(arg initial_positions_file)')['initial_positions']}"/>
     <xacro:ur_robot
         name="ur5e"
         tf_prefix="${arm_prefix}"
@@ -25,7 +25,8 @@
         joint_limits_parameters_file="$(find ur_description)/config/ur5e/joint_limits.yaml"
         kinematics_parameters_file="$(find ur_description)/config/ur5e/default_kinematics.yaml"
         physical_parameters_file="$(find ur_description)/config/ur5e/physical_parameters.yaml"
-        visual_parameters_file="$(find ur_description)/config/ur5e/visual_parameters.yaml">
+        visual_parameters_file="$(find ur_description)/config/ur5e/visual_parameters.yaml"
+        initial_positions="${initial_positions}">
         <origin xyz="-0.1 -0.1 0" rpy="0 0 0"/>
     </xacro:ur_robot>
 
@@ -55,13 +56,6 @@
         <parent link="world"/>
         <child link="robot_base"/>
         <origin xyz="0 0 0.0" rpy="0 0 0"/>
-    </joint>
-
-    <!-- Attach UR5 to the base -->
-    <joint name="base_to_ur5_joint" type="fixed">
-        <parent link="robot_base"/>
-        <child link="${arm_prefix}base_link"/>
-        <origin xyz="0 0.25 0.31" rpy="0 0 ${pi/2}"/>
     </joint>
 
     <!-- Robotiq Coupler -->

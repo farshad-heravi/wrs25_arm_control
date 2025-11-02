@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wrs_cell_v2">
-    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+    <xacro:arg name="initial_positions_file" default="$(find wrs_env_v2_moveit_config)/config/initial_positions.yaml" />
 
     <!-- Import wrs_cell_v2 urdf file -->
     <xacro:include filename="$(find wrs_cell_description)/urdf/wrs_env_V2.urdf.xacro" />
