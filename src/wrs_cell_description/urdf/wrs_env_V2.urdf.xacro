@@ -96,10 +96,13 @@
     </xacro:robotiq_85_gripper> 
 
     <!-- Rail -->
+    <xacro:property name="rail_length" value="2.0"/>
+    <xacro:property name="rail_width" value="0.8"/>
+    <xacro:property name="rail_height" value="0.8"/>
     <link name="rail_link">
         <visual>
             <geometry>
-                <box size="2.0 0.8 0.4"/>
+                <box size="${rail_length} ${rail_width} ${rail_height}"/>
             </geometry>
             <material name="dark_grey">
                 <color rgba="0.3 0.3 0.3 1.0"/>
@@ -107,11 +110,11 @@
         </visual>
         <collision>
             <geometry>
-                <box size="2.0 0.8 0.4"/>
+                <box size="${rail_length} ${rail_width} ${rail_height}"/>
             </geometry>
         </collision>
         <inertial>
-            <mass value="10"/>
+            <mass value="100"/>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
         </inertial>
@@ -120,7 +123,7 @@
     <joint name="world_to_rail_joint" type="fixed">
         <parent link="world"/>
         <child link="rail_link"/>
-        <origin xyz="0.4 0.83 0.2" rpy="0 0 0"/>
+        <origin xyz="${rail_width/2 + 0.1} ${0/2} ${-rail_height/2 - 0.1}" rpy="0 0 ${pi/2}"/>
     </joint>
 
 </robot>
