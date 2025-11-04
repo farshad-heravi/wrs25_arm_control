@@ -153,6 +153,15 @@ def generate_launch_description():
         )]
     )
 
+    # remap /force_torque_sensor_broadcaster/wrench to /tool_wrench (when using real robot)
+    tool_wrench_remap = Node(
+        package="topic_tools",
+        executable="relay",
+        arguments=["/force_torque_sensor_broadcaster/wrench", "/tool_wrench"],
+        output="none",
+        condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
+    )
+
     return LaunchDescription(declared_arguments + [
         robot_state_publisher_node,
         controller_manager_node,
@@ -160,4 +169,5 @@ def generate_launch_description():
         hand_controller_spawner,
         joint_state_broadcaster_spawner,
         moveit_nodes_timer,
+        tool_wrench_remap,
     ])
