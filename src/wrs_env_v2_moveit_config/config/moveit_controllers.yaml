@@ -4,9 +4,23 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 
 moveit_simple_controller_manager:
   controller_names:
-    - ur5_arm_controller
+    - scaled_joint_trajectory_controller
     - hand_controller
 
+  # For real UR robot - uses the scaled_joint_trajectory_controller from UR driver
+  # IMPORTANT: UR driver must be launched with tf_prefix:=ur5_ to match these joint names
+  scaled_joint_trajectory_controller:
+    type: FollowJointTrajectory
+    joints:
+      - ur5_shoulder_pan_joint
+      - ur5_shoulder_lift_joint
+      - ur5_elbow_joint
+      - ur5_wrist_1_joint
+      - ur5_wrist_2_joint
+      - ur5_wrist_3_joint
+    action_ns: follow_joint_trajectory
+  
+  # For simulation - uses ur5_arm_controller
   ur5_arm_controller:
     type: FollowJointTrajectory
     joints:
@@ -17,6 +31,7 @@ moveit_simple_controller_manager:
       - ur5_wrist_2_joint
       - ur5_wrist_3_joint
     action_ns: follow_joint_trajectory
+  
   hand_controller:
     type: FollowJointTrajectory
     joints:

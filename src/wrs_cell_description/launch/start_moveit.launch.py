@@ -2,8 +2,9 @@ import os
 from launch import LaunchDescription
 from launch_param_builder import get_package_share_directory
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, GroupAction, TimerAction
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument, GroupAction, TimerAction, IncludeLaunchDescription
+from launch.conditions import IfCondition, UnlessCondition
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.substitutions import FindPackageShare
 from moveit_configs_utils import MoveItConfigsBuilder
 
@@ -15,11 +16,31 @@ def generate_launch_description():
             default_value='false',
             description='Use simulation time',
         ),
+        DeclareLaunchArgument(
+            'use_fake_hardware',
+            default_value='true',
+            description='Use simulation time',
+        ),
+        DeclareLaunchArgument(
+            'fake_sensor_commands',
+            default_value='true',
+            description='Use simulation time',
+        ),
+        DeclareLaunchArgument(
+            'robot_ip',
+            default_value='192.168.1.101',
+            description='IP address of the UR5e robot',
+        ),
     ]
 
     moveit_config = (
         MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
-        .robot_description(file_path="config/wrs_cell_v2.urdf.xacro")
+        .robot_description(file_path="config/wrs_cell_v2.urdf.xacro",
+            mappings={
+                "use_fake_hardware": LaunchConfiguration('use_fake_hardware'),
+                "fake_sensor_commands": LaunchConfiguration('fake_sensor_commands'),
+                "robot_ip": LaunchConfiguration('robot_ip'),
+            })
         .robot_description_semantic(file_path="config/wrs_cell_v2.srdf")
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
         .robot_description_kinematics(file_path="config/kinematics.yaml")
@@ -43,6 +64,8 @@ def generate_launch_description():
         get_package_share_directory('wrs_env_v2_moveit_config'), 'config', 'ros2_controllers.yaml'
     )
 
+    # Robot State Publisher
+    # When using real robot, make sure UR driver is launched with robot_state_pub_node:=false
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -53,6 +76,7 @@ def generate_launch_description():
         ],
     )
 
+    # Controller Manager - only for simulation (fake hardware)
     controller_manager_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -62,14 +86,16 @@ def generate_launch_description():
             {'use_sim_time': LaunchConfiguration('use_sim_time')},
         ],
         output="screen",
+        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
-    # Spawners for each controller
+    # Spawners for simulation controllers - only when using fake hardware
     ur5_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["ur5_arm_controller", "--controller-manager", "/controller_manager"],
         output="screen",
+        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
     hand_controller_spawner = Node(
@@ -77,13 +103,17 @@ def generate_launch_description():
         executable="spawner",
         arguments=["hand_controller", "--controller-manager", "/controller_manager"],
         output="screen",
+        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
+    # Hand/Gripper controller - only for simulation
+    # For real robot, gripper needs separate driver/controller setup
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
         output="screen",
+        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
     move_group_node = Node(

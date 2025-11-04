@@ -4,8 +4,10 @@
     <xacro:property name="arm_prefix" value="ur5_"/>
 
     <!-- ur5 -->
-    <xacro:arg name="use_fake_hardware" default="true"/>
-    <xacro:arg name="fake_sensor_commands" default="true"/>
+    <xacro:arg name="use_fake_hardware" default="false"/>
+    <xacro:arg name="fake_sensor_commands" default="false"/>
+    <xacro:arg name="robot_ip" default="192.168.1.102"/>
+    
     <!-- Include official UR5e description from ur_description package -->
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
 
