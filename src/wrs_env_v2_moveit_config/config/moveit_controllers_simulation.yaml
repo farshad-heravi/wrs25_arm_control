@@ -4,7 +4,7 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 
 moveit_simple_controller_manager:
   controller_names:
-    - scaled_joint_trajectory_controller
+    - ur5_arm_controller
     - hand_controller
 
   # For real UR robot - uses the scaled_joint_trajectory_controller from UR driver
@@ -33,7 +33,14 @@ moveit_simple_controller_manager:
     action_ns: follow_joint_trajectory
   
   hand_controller:
-    type: FollowJointTrajectory
-    joints:
+    # type: FollowJointTrajectory
+    type: GripperCommand
+    action_ns: gripper_cmd
+    joints: 
       - ur5_robotiq_85_left_knuckle_joint
-    action_ns: follow_joint_trajectory
+    # action_ns: follow_joint_trajectory
+
+  trajectory_execution:
+    allowed_execution_duration_scaling: 1.2 # Allow 20% more time
+    allowed_goal_duration_margin: 0.5    # Allow a small buffer in the goal time
+    allowed_start_tolerance: 0.01        # Increase joint position tolerance at start
