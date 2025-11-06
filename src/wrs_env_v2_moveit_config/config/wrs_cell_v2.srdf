@@ -22,7 +22,11 @@
         <joint name="ur5_robotiq_85_left_knuckle_joint"/>
     </group>
     <group name="ur5_arm">
-        <chain base_link="ur5_base_link" tip_link="ur5_tool0"/>
+        <chain base_link="ur5_base_link" tip_link="ur5_gripper_adapter"/>
+    </group>
+    <group name="suction_group">
+        <link name="ur5_gripper_adapter"/>
+        <link name="ur5_suction_tcp"/>
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="home" group="ur5_arm">
@@ -40,7 +44,8 @@
         <joint name="ur5_robotiq_85_left_knuckle_joint" value="0.8"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="hand" parent_link="ur5_tool0" group="hand" parent_group="ur5_arm"/>
+    <end_effector name="hand" parent_link="ur5_gripper_adapter" group="hand" parent_group="ur5_arm"/>
+    <end_effector name="suction_ee" parent_link="ur5_gripper_adapter" group="suction_group" parent_group="ur5_arm"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="fixed_base" type="fixed" parent_frame="world" child_link="ur5_base_link"/>
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
@@ -82,7 +87,7 @@
     <disable_collisions link1="ur5_robotiq_85_base_link" link2="ur5_wrist_1_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_base_link" link2="ur5_wrist_2_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_base_link" link2="ur5_wrist_3_link" reason="Never"/>
-    <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_robotiq_85_left_finger_tip_link" reason="Default"/>
+    <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_robotiq_85_left_finger_tip_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_robotiq_85_left_inner_knuckle_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_robotiq_85_left_knuckle_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_robotiq_85_right_finger_link" reason="Never"/>
@@ -92,7 +97,7 @@
     <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_wrist_1_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_wrist_2_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_link" link2="ur5_wrist_3_link" reason="Never"/>
-    <disable_collisions link1="ur5_robotiq_85_left_finger_tip_link" link2="ur5_robotiq_85_left_inner_knuckle_link" reason="Adjacent"/>
+    <disable_collisions link1="ur5_robotiq_85_left_finger_tip_link" link2="ur5_robotiq_85_left_inner_knuckle_link" reason="Default"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_tip_link" link2="ur5_robotiq_85_left_knuckle_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_tip_link" link2="ur5_robotiq_85_right_finger_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_finger_tip_link" link2="ur5_robotiq_85_right_finger_tip_link" reason="Never"/>
@@ -116,13 +121,13 @@
     <disable_collisions link1="ur5_robotiq_85_left_knuckle_link" link2="ur5_wrist_1_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_knuckle_link" link2="ur5_wrist_2_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_left_knuckle_link" link2="ur5_wrist_3_link" reason="Never"/>
-    <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_robotiq_85_right_finger_tip_link" reason="Default"/>
+    <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_robotiq_85_right_finger_tip_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_robotiq_85_right_inner_knuckle_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_robotiq_85_right_knuckle_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_wrist_1_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_wrist_2_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_link" link2="ur5_wrist_3_link" reason="Never"/>
-    <disable_collisions link1="ur5_robotiq_85_right_finger_tip_link" link2="ur5_robotiq_85_right_inner_knuckle_link" reason="Adjacent"/>
+    <disable_collisions link1="ur5_robotiq_85_right_finger_tip_link" link2="ur5_robotiq_85_right_inner_knuckle_link" reason="Default"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_tip_link" link2="ur5_robotiq_85_right_knuckle_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_tip_link" link2="ur5_wrist_1_link" reason="Never"/>
     <disable_collisions link1="ur5_robotiq_85_right_finger_tip_link" link2="ur5_wrist_2_link" reason="Never"/>
