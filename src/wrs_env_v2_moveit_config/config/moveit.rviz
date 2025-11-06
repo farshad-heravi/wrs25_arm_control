@@ -136,11 +136,6 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          ur5_robotiq_coupler:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           ur5_shoulder_link:
             Alpha: 1
             Show Axes: false
@@ -285,11 +280,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           ur5_robotiq_85_right_knuckle_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          ur5_robotiq_coupler:
             Alpha: 1
             Show Axes: false
             Show Trail: false
