@@ -64,12 +64,12 @@
     <link name="${arm_prefix}gripper_adapter">
       <visual>
         <geometry>
-          <mesh filename="package://robot_description/meshes/gripper_adapter.stl" />
+          <mesh filename="package://robot_description/meshes/gripper_adapter.stl" scale="0.001 0.001 0.001"/>
         </geometry>
       </visual>
       <collision>
         <geometry>
-          <mesh filename="package://robot_description/meshes/gripper_adapter.stl" />
+          <mesh filename="package://robot_description/meshes/gripper_adapter.stl" scale="0.001 0.001 0.001"/>
         </geometry>
       </collision>
       <!-- TODO: check inertia -->
@@ -82,40 +82,14 @@
     </link>
 
     <joint name="${arm_prefix}gripper_adapter_joint" type="fixed">
-        <origin xyz="0 0 -0.003" rpy="0 0 ${-pi/2.0}" /> <!-- TODO: adapt origin -->
-        <parent link="${arm_prefix}roboti_coupler"/> <!-- ask if it will replace it -->
+      <origin xyz="0 0 -0.003" rpy="0 0 ${-pi/2.0}" />
+      <parent link="${arm_prefix}tool0"/>
       <child link="${arm_prefix}gripper_adapter"/>
     </joint>
 
-    <!-- Robotiq Coupler -->
-    <link name="${arm_prefix}robotiq_coupler">
-      <visual>
-        <geometry>
-          <mesh filename="package://robot_description/meshes/suction_base.stl" />
-        </geometry>
-      </visual>
-      <collision>
-        <geometry>
-          <mesh filename="package://robot_description/meshes/suction_base.stl" />
-        </geometry>
-      </collision>
-      <inertial>
-        <origin xyz="2.073e-05   1.45286e-03  -1.1049e-03" rpy="0 0 0" />
-        <mass value="0.168" />
-        <inertia ixx="6.69695624e-05" ixy="5.21511788e-09" ixz="-2.74383009e-08" 
-                 iyy="7.85088161e-05" iyz="5.41105193e-07" izz="1.41819717e-04"/>
-      </inertial>
-    </link>
-
-    <joint name="${arm_prefix}robotiq_coupler_joint" type="fixed">
-      <origin xyz="0 0 -0.003" rpy="0 0 ${-pi/2.0}" />
-      <parent link="${arm_prefix}tool0"/>
-      <child link="${arm_prefix}robotiq_coupler"/>
-    </joint>
-
     <!-- Attach the robotiq 85 gripper -->
-    <xacro:robotiq_85_gripper prefix="${arm_prefix}" parent="${arm_prefix}robotiq_coupler" >
-      <origin xyz="0 0 0.08" rpy="0 ${-pi/2} ${pi/2}"/>
+    <xacro:robotiq_85_gripper prefix="${arm_prefix}" parent="${arm_prefix}gripper_adapter" >
+        <origin xyz="-0.035 0.0 0.075" rpy="${pi/2} ${-5*pi/6} 0"/>
     </xacro:robotiq_85_gripper> 
 
     <!-- Rail -->
