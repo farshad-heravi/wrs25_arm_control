@@ -33,6 +33,11 @@ def generate_launch_description():
         ),
     ]
 
+    if LaunchConfiguration('use_fake_hardware'):
+        moveit_config_file = "config/moveit_controllers_simulation.yaml"
+    else:
+        moveit_config_file = "config/moveit_controllers_real_robot.yaml"
+
     moveit_config = (
         MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
         .robot_description(file_path="config/wrs_cell_v2.urdf.xacro",
@@ -42,7 +47,7 @@ def generate_launch_description():
                 "robot_ip": LaunchConfiguration('robot_ip'),
             })
         .robot_description_semantic(file_path="config/wrs_cell_v2.srdf")
-        .trajectory_execution(file_path="config/moveit_controllers.yaml")
+        .trajectory_execution(file_path=moveit_config_file)
         .robot_description_kinematics(file_path="config/kinematics.yaml")
         .joint_limits(file_path="config/joint_limits.yaml")
         .planning_scene_monitor(
@@ -158,7 +163,7 @@ def generate_launch_description():
         package="topic_tools",
         executable="relay",
         arguments=["/force_torque_sensor_broadcaster/wrench", "/tool_wrench"],
-        output="none",
+        output="log",
         condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
