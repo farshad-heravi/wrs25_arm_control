@@ -32,10 +32,12 @@ public:
      * @param target_pose The desired target pose.
      * @param pipeline_id The ID of the planning pipeline (e.g., "ompl", "pilz_industrial_motion_planner").
      * @param planner_id The ID of the specific planner within the pipeline (e.g., "RRTkConfigDefault", "LIN").
+     * @param tcp_link The TCP link to use (e.g., "ur5_gripper_tcp", "ur5_suction_tcp"). Empty string uses default.
      */
     void send_goal(const geometry_msgs::msg::PoseStamped & target_pose, 
                    const std::string& pipeline_id, 
-                   const std::string& planner_id)
+                   const std::string& planner_id,
+                   const std::string& tcp_link = "")
     {
         if (!this->client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
             RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
@@ -47,9 +49,11 @@ public:
         goal_msg.target_pose = target_pose;
         goal_msg.planning_pipeline_id = pipeline_id;
         goal_msg.planner_id = planner_id;
+        goal_msg.tcp_link = tcp_link;
 
-        RCLCPP_INFO(this->get_logger(), "Sending goal with Pipeline: '%s', Planner: '%s'",
-                    pipeline_id.c_str(), planner_id.c_str());
+        RCLCPP_INFO(this->get_logger(), "Sending goal with Pipeline: '%s', Planner: '%s', TCP Link: '%s'",
+                    pipeline_id.c_str(), planner_id.c_str(), 
+                    tcp_link.empty() ? "default (ur5_gripper_tcp)" : tcp_link.c_str());
 
         auto send_goal_options = rclcpp_action::Client<GoToPose>::SendGoalOptions();
         send_goal_options.goal_response_callback = 
@@ -204,6 +208,7 @@ int main(int argc, char ** argv)
     // Defaulting to empty strings lets the action server use MoveIt's defaults.
     client_node->declare_parameter<std::string>("pipeline", "");
     client_node->declare_parameter<std::string>("planner", "");
+    client_node->declare_parameter<std::string>("tcp_link", "");  // e.g., "ur5_gripper_tcp", "ur5_suction_tcp"
 
     geometry_msgs::msg::PoseStamped goal_pose;
     goal_pose.header.frame_id = "ur5_base_link";
@@ -217,9 +222,10 @@ int main(int argc, char ** argv)
     
     std::string pipeline_id = client_node->get_parameter("pipeline").as_string();
     std::string planner_id = client_node->get_parameter("planner").as_string();
+    std::string tcp_link = client_node->get_parameter("tcp_link").as_string();
 
     // 3. Send goal with all parameters
-    client_node->send_goal(goal_pose, pipeline_id, planner_id);
+    client_node->send_goal(goal_pose, pipeline_id, planner_id, tcp_link);
 
     rclcpp::spin(client_node);
     rclcpp::shutdown();

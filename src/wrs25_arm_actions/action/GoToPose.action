@@ -2,6 +2,7 @@
 geometry_msgs/PoseStamped target_pose
 string planning_pipeline_id # e.g., "ompl", "pilz_industrial_motion_planner", "chomp"
 string planner_id # e.g., "RRTkConfigDefault", "LIN", "PTP", "CHOMP"
+string tcp_link # e.g., "ur5_gripper_tcp", "ur5_suction_tcp" (optional, defaults to "ur5_gripper_tcp")
 ---
 # Result definition
 bool success
