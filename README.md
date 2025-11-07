@@ -120,7 +120,7 @@ Alternatively, you can use the provided action clients to send goals from the co
     ros2 run wrs25_arm_actions go_to_pose_action_client_node \
                 --ros-args -p posx:=0.5 -p posy:=0.1 -p posz:=0.8 \
                -p pipeline:="pilz_industrial_motion_planner" \
-               -p orx:=1.0 -p ory:= 0.0 -p orz:=0.0 -p orw:=0.0 \
+               -p orx:=1.0 -p ory:=0.0 -p orz:=0.0 -p orw:=0.0 \
                -p planner:="LIN" \
                -p tcp_link:="ur5_suction_tcp"
     ```
