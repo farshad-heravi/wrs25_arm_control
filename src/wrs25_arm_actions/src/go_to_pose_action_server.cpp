@@ -80,12 +80,16 @@ private:
                     goal->target_pose.pose.position.y, 
                     goal->target_pose.pose.position.z);
 
-        // 2. Set TCP Link (End Effector)
+        // 2. Clear previous targets to avoid multiple constraint errors
+        this->move_group_interface_->clearPoseTargets();
+        RCLCPP_INFO(this->get_logger(), "Cleared previous pose targets");
+
+        // 3. Set TCP Link (End Effector)
         std::string tcp_link = goal->tcp_link.empty() ? "ur5_gripper_tcp" : goal->tcp_link;
         this->move_group_interface_->setEndEffectorLink(tcp_link);
         RCLCPP_INFO(this->get_logger(), "Set end effector link to: %s", tcp_link.c_str());
 
-        // 3. Dynamic Planner Configuration
+        // 4. Dynamic Planner Configuration
         
         // Set Planning Pipeline ID if provided in the goal
         if (!goal->planning_pipeline_id.empty()) {
@@ -105,7 +109,7 @@ private:
             RCLCPP_INFO(this->get_logger(), "Using default planner ID within the selected pipeline.");
         }
 
-        // 4. Set Target and Plan
+        // 5. Set Target and Plan
         this->move_group_interface_->setPoseTarget(goal->target_pose);
         
         moveit::planning_interface::MoveGroupInterface::Plan my_plan;
