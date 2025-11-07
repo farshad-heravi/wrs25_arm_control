@@ -20,6 +20,7 @@ find_package(tf2 REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
   "action/GripperControl.action"
+  "action/VisionCheck.action"
   DEPENDENCIES geometry_msgs
 )
 
