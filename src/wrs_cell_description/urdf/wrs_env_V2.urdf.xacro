@@ -34,7 +34,7 @@
         physical_parameters_file="$(find ur_description)/config/ur5e/physical_parameters.yaml"
         visual_parameters_file="$(find ur_description)/config/ur5e/visual_parameters.yaml"
         initial_positions="${initial_positions}">
-        <origin xyz="${-0.27/2} ${-0.27/2} 0.015" rpy="0 0 0"/>
+        <origin xyz="${-0.27/2} ${-0.27/2} 0.015" rpy="0 0 ${pi}"/>
     </xacro:ur_robot>
 
     <!-- World link -->
@@ -65,6 +65,12 @@
         <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
 
+    <link name="${arm_prefix}flange_rotated_link" />
+    <joint name="${arm_prefix}flange_rotated_joint" type="fixed">
+        <parent link="${arm_prefix}flange"/>
+        <child link="${arm_prefix}flange_rotated_link"/>
+        <origin xyz="0 0 0" rpy="${pi/2.0} 0 0"/>
+    </joint>
     <!-- Gripper adapter -->
     <link name="${arm_prefix}gripper_adapter">
       <visual>
@@ -86,9 +92,10 @@
       </inertial>
     </link>
 
+
     <joint name="${arm_prefix}gripper_adapter_joint" type="fixed">
       <origin xyz="-0.006 0 0" rpy="0 ${pi/2.0} 0" />
-      <parent link="${arm_prefix}flange"/>
+      <parent link="${arm_prefix}flange_rotated_link"/>
       <child link="${arm_prefix}gripper_adapter"/>
     </joint>
 
@@ -113,6 +120,33 @@
         <child link="${arm_prefix}suction_tcp"/>
         <!-- Position at the center between the gripper fingers -->
         <origin xyz="0.03299 0.0 0.07114" rpy="0 ${pi/3} 0"/>
+    </joint>
+
+    <!-- add camera pillar -->
+    <link name="camera_pillar_link" >
+        <visual>
+            <geometry>
+                <box size="0.08 0.08 0.997"/>
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.08 0.08 0.997"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="camera_pillar_joint" type="fixed">
+        <parent link="world"/>
+        <child link="camera_pillar_link"/>
+        <origin xyz="-0.06 -0.96 0.0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- define camera link -->
+    <link name="camera_link" />
+    <joint name="camera_to_worldjoint" type="fixed">
+        <parent link="camera_pillar_link"/>
+        <child link="camera_link"/>
+        <origin xyz="-0.06 -0.96 1.0" rpy="0 0 0"/>
     </joint>
 
     

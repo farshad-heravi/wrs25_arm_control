@@ -5,9 +5,12 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /MotionPlanning1
+        - /MotionPlanning1/Scene Robot1
         - /Marker1/Topic1
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
-    Tree Height: 356
+    Tree Height: 487
   - Class: rviz_common/Help
     Name: Help
   - Class: rviz_common/Views
@@ -67,6 +70,15 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
+          camera_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          camera_pillar_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           rail_link:
             Alpha: 1
             Show Axes: false
@@ -85,12 +97,37 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          ur5_base_link_inertia:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
             Value: true
+          ur5_flange:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          ur5_flange_rotated_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ur5_forearm_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          ur5_ft_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          ur5_gripper_adapter:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          ur5_gripper_tcp:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ur5_robotiq_85_base_link:
             Alpha: 1
             Show Axes: false
@@ -141,6 +178,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          ur5_suction_tcp:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ur5_tool0:
             Alpha: 1
             Show Axes: false
@@ -169,7 +210,7 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-        Loop Animation: true
+        Loop Animation: false
         Robot Alpha: 0.5
         Robot Color: 150; 50; 150
         Show Robot Collision: false
@@ -193,7 +234,7 @@ Visualization Manager:
         Interactive Marker Size: 0
         Joint Violation Color: 255; 0; 255
         Planning Group: ur5_arm
-        Query Goal State: true
+        Query Goal State: false
         Query Start State: false
         Show Workspace: false
         Start State Alpha: 1
@@ -215,6 +256,15 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
+          camera_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          camera_pillar_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           rail_link:
             Alpha: 1
             Show Axes: false
@@ -233,12 +283,37 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          ur5_base_link_inertia:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
             Value: true
+          ur5_flange:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          ur5_flange_rotated_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ur5_forearm_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          ur5_ft_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          ur5_gripper_adapter:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          ur5_gripper_tcp:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ur5_robotiq_85_base_link:
             Alpha: 1
             Show Axes: false
@@ -289,6 +364,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          ur5_suction_tcp:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ur5_tool0:
             Alpha: 1
             Show Axes: false
@@ -317,7 +396,7 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-        Robot Alpha: 0.5
+        Robot Alpha: 1
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
@@ -326,7 +405,7 @@ Visualization Manager:
       Enabled: true
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Transient Local
@@ -334,6 +413,103 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Best Effort
         Value: /target_pose_marker
+      Value: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        camera_link:
+          Value: false
+        camera_pillar_link:
+          Value: false
+        rail_link:
+          Value: false
+        robot_base:
+          Value: false
+        ur5_base:
+          Value: false
+        ur5_base_link:
+          Value: false
+        ur5_base_link_inertia:
+          Value: false
+        ur5_flange:
+          Value: false
+        ur5_flange_rotated_link:
+          Value: false
+        ur5_forearm_link:
+          Value: false
+        ur5_ft_frame:
+          Value: false
+        ur5_gripper_adapter:
+          Value: false
+        ur5_gripper_tcp:
+          Value: true
+        ur5_robotiq_85_base_link:
+          Value: false
+        ur5_robotiq_85_left_finger_link:
+          Value: false
+        ur5_robotiq_85_left_knuckle_link:
+          Value: false
+        ur5_robotiq_85_right_finger_link:
+          Value: false
+        ur5_robotiq_85_right_knuckle_link:
+          Value: false
+        ur5_shoulder_link:
+          Value: false
+        ur5_suction_tcp:
+          Value: true
+        ur5_tool0:
+          Value: false
+        ur5_tool0_controller:
+          Value: false
+        ur5_upper_arm_link:
+          Value: false
+        ur5_wrist_1_link:
+          Value: false
+        ur5_wrist_2_link:
+          Value: false
+        ur5_wrist_3_link:
+          Value: false
+        world:
+          Value: false
+      Marker Scale: 0.30000001192092896
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        world:
+          camera_pillar_link:
+            camera_link:
+              {}
+          rail_link:
+            {}
+          robot_base:
+            ur5_base_link:
+              ur5_base:
+                ur5_tool0_controller:
+                  {}
+              ur5_base_link_inertia:
+                ur5_shoulder_link:
+                  ur5_upper_arm_link:
+                    ur5_forearm_link:
+                      ur5_wrist_1_link:
+                        ur5_wrist_2_link:
+                          ur5_wrist_3_link:
+                            ur5_flange:
+                              ur5_flange_rotated_link:
+                                ur5_gripper_adapter:
+                                  ur5_robotiq_85_base_link:
+                                    ur5_gripper_tcp:
+                                      {}
+                                  ur5_suction_tcp:
+                                    {}
+                              ur5_tool0:
+                                {}
+                            ur5_ft_frame:
+                              {}
+      Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
@@ -353,30 +529,30 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.164196014404297
+      Distance: 1.1890884637832642
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.012981342151761055
-        Y: 0.20126858353614807
-        Z: 0.6075795888900757
+        X: -0.2045190930366516
+        Y: -0.3871230483055115
+        Z: 0.30988067388534546
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.06499996036291122
+      Pitch: 0.21499934792518616
       Target Frame: world
       Value: Orbit (rviz_default_plugins)
-      Yaw: 2.3951520919799805
+      Yaw: 3.7501771450042725
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 975
+  Height: 1136
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -385,9 +561,9 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002b400000375fc0200000005fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb000000100044006900730070006c006100790073010000003d000001e7000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000022a000001880000017d00fffffffb0000000800480065006c0070000000029a0000006e0000006e00fffffffb0000000a0056006900650077007300000002fd000000b5000000a400ffffff000001f60000037500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002b400000416fc0200000005fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb000000100044006900730070006c006100790073010000003d0000026a000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000002ad000001a60000017d00fffffffb0000000800480065006c0070000000029a0000006e0000006e00fffffffb0000000a0056006900650077007300000002fd000000b5000000a400ffffff000004800000041600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
-  Width: 1200
-  X: 501
-  Y: 173
+  Width: 1850
+  X: 70
+  Y: 27
