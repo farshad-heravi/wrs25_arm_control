@@ -29,7 +29,7 @@ This method allows you to have the latest versions of the packages.
 
 3.  **Build the workspace:**
     ```bash
-    colcon build --symlink-install --cmake-args --executor secuential
+    colcon build --symlink-install --cmake-args --executor sequential
     source install/setup.bash
     ```
 
