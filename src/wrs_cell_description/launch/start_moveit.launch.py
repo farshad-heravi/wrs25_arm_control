@@ -34,9 +34,9 @@ def generate_launch_description():
     ]
 
     if LaunchConfiguration('use_fake_hardware'):
-        moveit_config_file = "config/moveit_controllers_simulation.yaml"
-    else:
         moveit_config_file = "config/moveit_controllers_real_robot.yaml"
+    else:
+        moveit_config_file = "config/moveit_controllers_simulation.yaml"
 
     moveit_config = (
         MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
@@ -121,6 +121,16 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
+    # Spawner for real robot controller - starts scaled_joint_trajectory_controller from UR driver
+    # The UR driver loads this controller but doesn't start it by default
+    scaled_joint_trajectory_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["scaled_joint_trajectory_controller", "--controller-manager", "/controller_manager"],
+        output="screen",
+        condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
+    )
+
     move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
@@ -167,12 +177,25 @@ def generate_launch_description():
         condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
     )
 
+    # Gripper joint state publisher - adds gripper joint to joint states for real robot
+    # This node subscribes to /joint_states from UR driver, adds the gripper joint,
+    # and republishes. It checks if gripper joint already exists to avoid feedback loops.
+    gripper_joint_state_publisher = Node(
+        package="wrs_cell_description",
+        executable="gripper_joint_state_publisher.py",
+        name="gripper_joint_state_publisher",
+        output="screen",
+        condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
+    )
+
     return LaunchDescription(declared_arguments + [
         robot_state_publisher_node,
         controller_manager_node,
         ur5_arm_controller_spawner,
         hand_controller_spawner,
         joint_state_broadcaster_spawner,
+        scaled_joint_trajectory_controller_spawner,
+        gripper_joint_state_publisher,
         moveit_nodes_timer,
         tool_wrench_remap,
     ])
