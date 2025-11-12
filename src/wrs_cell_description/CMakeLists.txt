@@ -13,8 +13,17 @@ install(
     urdf
     rviz
     meshes
+    scripts
   DESTINATION
     share/${PROJECT_NAME}
+)
+
+# Install Python script with executable permissions
+install(
+  PROGRAMS
+    scripts/gripper_joint_state_publisher.py
+  DESTINATION
+    lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
