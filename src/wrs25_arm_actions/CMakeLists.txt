@@ -7,6 +7,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
@@ -16,11 +17,13 @@ find_package(rclcpp_components REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(rclpy REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
   "action/GripperControl.action"
   "action/VisionCheck.action"
+  "action/RobotiqGripperControl.action"
   DEPENDENCIES geometry_msgs
 )
 
@@ -107,6 +110,15 @@ install(TARGETS gripper_control_action_client
 install(
     DIRECTORY launch
     DESTINATION share/${PROJECT_NAME}
+)
+
+# Install Python scripts
+install(PROGRAMS
+  scripts/robotiq_gripper.py
+  scripts/robotiq_gripper_action_server.py
+  scripts/robotiq_gripper_action_client.py
+  scripts/test_robotiq_gripper.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 

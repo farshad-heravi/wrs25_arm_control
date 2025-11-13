@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+"""
+ROS 2 Action Server for Robotiq Gripper Control
+Author: Farshad Nozad Heravi (f.n.heravi@gmail.com)
+"""
+
+import rclpy
+from rclpy.action import ActionServer, GoalResponse, CancelResponse
+from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
+
+from wrs25_arm_actions.action import RobotiqGripperControl
+import robotiq_gripper
+
+
+class RobotiqGripperActionServer(Node):
+    """Action server for controlling Robotiq gripper hardware."""
+
+    def __init__(self):
+        super().__init__('robotiq_gripper_action_server')
+        
+        # Declare parameters with defaults
+        self.declare_parameter('default_ip', '192.168.1.101')
+        self.declare_parameter('default_port', 63352)
+        self.declare_parameter('auto_connect', True)
+        
+        # Get parameters
+        self.default_ip = self.get_parameter('default_ip').value
+        self.default_port = self.get_parameter('default_port').value
+        auto_connect = self.get_parameter('auto_connect').value
+        
+        # Initialize gripper object
+        self.gripper = None
+        self.connected = False
+        
+        # Create action server
+        self._action_server = ActionServer(
+            self,
+            RobotiqGripperControl,
+            'robotiq_gripper_control',
+            execute_callback=self.execute_callback,
+            goal_callback=self.goal_callback,
+            cancel_callback=self.cancel_callback,
+            callback_group=ReentrantCallbackGroup()
+        )
+        
+        self.get_logger().info('Robotiq Gripper Action Server initialized')
+        self.get_logger().info(f'Default IP: {self.default_ip}, Port: {self.default_port}')
+        
+        # Auto-connect if requested
+        if auto_connect:
+            try:
+                self._connect_gripper(self.default_ip, self.default_port)
+            except Exception as e:
+                self.get_logger().error(f'Auto-connect failed: {e}')
+
+    def _connect_gripper(self, ip: str, port: int):
+        """Connect to the gripper."""
+        if self.gripper is None:
+            self.gripper = robotiq_gripper.RobotiqGripper()
+        
+        if not self.connected:
+            self.get_logger().info(f'Connecting to gripper at {ip}:{port}...')
+            self.gripper.connect(ip, port)
+            self.get_logger().info('Activating gripper...')
+            self.gripper.activate()
+            self.connected = True
+            self.get_logger().info('Gripper connected and activated')
+
+    def goal_callback(self, goal_request):
+        """Accept or reject a client request to begin an action."""
+        self.get_logger().info('Received goal request')
+        return GoalResponse.ACCEPT
+
+    def cancel_callback(self, goal_handle):
+        """Accept or reject a client request to cancel an action."""
+        self.get_logger().info('Received cancel request')
+        return CancelResponse.ACCEPT
+
+    def execute_callback(self, goal_handle):
+        """Execute the action."""
+        self.get_logger().info('Executing goal...')
+        
+        request = goal_handle.request
+        feedback_msg = RobotiqGripperControl.Feedback()
+        result = RobotiqGripperControl.Result()
+        
+        # Get connection parameters
+        ip = request.ip_address if request.ip_address else self.default_ip
+        port = request.port if request.port > 0 else self.default_port
+        
+        try:
+            # Connect to gripper if not already connected
+            self._connect_gripper(ip, port)
+            
+            # Determine target position based on command
+            if request.command.lower() == 'open':
+                target_pos = self.gripper.get_open_position()
+                speed = request.speed if request.speed > 0 else 255
+                force = request.force if request.force > 0 else 255
+                self.get_logger().info('Opening gripper...')
+                
+            elif request.command.lower() == 'close':
+                target_pos = self.gripper.get_closed_position()
+                speed = request.speed if request.speed > 0 else 255
+                force = request.force if request.force > 0 else 255
+                self.get_logger().info('Closing gripper...')
+                
+            elif request.command.lower() == 'move':
+                target_pos = request.position
+                speed = request.speed if request.speed > 0 else 255
+                force = request.force if request.force > 0 else 255
+                self.get_logger().info(f'Moving gripper to position {target_pos}...')
+                
+            else:
+                result.success = False
+                result.message = f'Unknown command: {request.command}'
+                goal_handle.abort()
+                return result
+            
+            # Move the gripper and wait for completion
+            final_pos, obj_status = self.gripper.move_and_wait_for_pos(
+                target_pos, speed, force
+            )
+            
+            # Send final feedback
+            feedback_msg.current_position = final_pos
+            feedback_msg.is_moving = False
+            goal_handle.publish_feedback(feedback_msg)
+            
+            # Set result
+            result.success = True
+            result.final_position = final_pos
+            result.message = f'Gripper {request.command} completed. Final position: {final_pos}, Status: {obj_status.name}'
+            
+            self.get_logger().info(result.message)
+            goal_handle.succeed()
+            
+        except Exception as e:
+            result.success = False
+            result.message = f'Error: {str(e)}'
+            result.final_position = -1
+            self.get_logger().error(result.message)
+            goal_handle.abort()
+        
+        return result
+
+    def destroy_node(self):
+        """Clean up before destroying the node."""
+        if self.gripper is not None and self.connected:
+            try:
+                self.gripper.disconnect()
+                self.get_logger().info('Gripper disconnected')
+            except Exception as e:
+                self.get_logger().error(f'Error disconnecting gripper: {e}')
+        super().destroy_node()
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    
+    server = RobotiqGripperActionServer()
+    executor = MultiThreadedExecutor()
+    
+    try:
+        rclpy.spin(server, executor=executor)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+

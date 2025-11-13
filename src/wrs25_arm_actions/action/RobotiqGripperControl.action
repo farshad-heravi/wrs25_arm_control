@@ -1,0 +1,17 @@
+# Goal: Command for Robotiq gripper
+string command  # "open", "close", or "move"
+int32 position  # Position (0-255): 0=open, 255=closed (used when command="move")
+int32 speed     # Speed (0-255): default 255
+int32 force     # Force (0-255): default 255
+string ip_address  # Gripper IP address (optional, defaults to 192.168.1.101)
+int32 port         # Gripper port (optional, defaults to 63352)
+---
+# Result: Operation result
+bool success
+string message
+int32 final_position  # Final position reached
+---
+# Feedback: Current gripper state
+int32 current_position
+bool is_moving
+

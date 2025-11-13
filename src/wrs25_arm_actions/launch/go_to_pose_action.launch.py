@@ -1,12 +1,33 @@
 from launch import LaunchDescription
-from launch_ros.actions import ComposableNodeContainer
+from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
 
 def generate_launch_description():
     """Launch the composable action server in a container."""
+    
+    # Declare launch arguments for Robotiq gripper
+    default_ip_arg = DeclareLaunchArgument(
+        'robotiq_ip',
+        default_value='192.168.1.101',
+        description='Default IP address of the Robotiq gripper'
+    )
+    
+    default_port_arg = DeclareLaunchArgument(
+        'robotiq_port',
+        default_value='63352',
+        description='Default port of the Robotiq gripper'
+    )
+    
+    auto_connect_arg = DeclareLaunchArgument(
+        'robotiq_auto_connect',
+        default_value='false',
+        description='Automatically connect to Robotiq gripper on startup'
+    )
     
     # Get path to kinematics configuration
     moveit_config_pkg = get_package_share_directory('wrs_env_v2_moveit_config')
@@ -41,4 +62,23 @@ def generate_launch_description():
         output='screen',
     )
 
-    return LaunchDescription([container])
+    # Robotiq gripper action server (Python node, separate from C++ container)
+    robotiq_gripper_server = Node(
+        package='wrs25_arm_actions',
+        executable='robotiq_gripper_action_server.py',
+        name='robotiq_gripper_action_server',
+        output='screen',
+        parameters=[{
+            'default_ip': LaunchConfiguration('robotiq_ip'),
+            'default_port': LaunchConfiguration('robotiq_port'),
+            'auto_connect': LaunchConfiguration('robotiq_auto_connect'),
+        }]
+    )
+
+    return LaunchDescription([
+        default_ip_arg,
+        default_port_arg,
+        auto_connect_arg,
+        container,
+        robotiq_gripper_server
+    ])
