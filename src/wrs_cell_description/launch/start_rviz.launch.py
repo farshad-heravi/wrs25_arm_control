@@ -11,7 +11,7 @@ def generate_launch_description():
     pkg_share = FindPackageShare("wrs_cell_description").find("wrs_cell_description")
     
     # Set the path to the URDF file
-    urdf_file = os.path.join(pkg_share, "urdf", "wrs_env.urdf.xacro")
+    urdf_file = os.path.join(pkg_share, "urdf", "wrs_env_V2.urdf.xacro")
     
     # Process the XACRO file
     robot_description_content = Command([
@@ -37,14 +37,6 @@ def generate_launch_description():
             output="screen",
             parameters=[{"robot_description": robot_description}],
         ),
-        
-        # Launch joint state publisher
-#        Node(
-#            package="joint_state_publisher",
-#            executable="joint_state_publisher",
-#            name="joint_state_publisher",
-#            output="screen",
-#        ),
         
         # Launch joint state publisher GUI for interactive joint control
         Node(
