@@ -2,12 +2,11 @@ import os
 from launch import LaunchDescription
 from launch_param_builder import get_package_share_directory
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, GroupAction, TimerAction, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, GroupAction, TimerAction, IncludeLaunchDescription, OpaqueFunction, LogInfo
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.substitutions import FindPackageShare
 from moveit_configs_utils import MoveItConfigsBuilder
-
 
 def generate_launch_description():
     declared_arguments = [
@@ -33,169 +32,180 @@ def generate_launch_description():
         ),
     ]
 
-    if LaunchConfiguration('use_fake_hardware'):
-        moveit_config_file = "config/moveit_controllers_real_robot.yaml"
-    else:
-        moveit_config_file = "config/moveit_controllers_simulation.yaml"
+    def launch_setup(context, *args, **kwargs):
+        use_fake_hardware = context.launch_configurations.get('use_fake_hardware', 'false')
 
-    moveit_config = (
-        MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
-        .robot_description(file_path="config/wrs_cell_v2.urdf.xacro",
-            mappings={
-                "use_fake_hardware": LaunchConfiguration('use_fake_hardware'),
-                "fake_sensor_commands": LaunchConfiguration('fake_sensor_commands'),
-                "robot_ip": LaunchConfiguration('robot_ip'),
-            })
-        .robot_description_semantic(file_path="config/wrs_cell_v2.srdf")
-        .trajectory_execution(file_path=moveit_config_file)
-        .robot_description_kinematics(file_path="config/kinematics.yaml")
-        .joint_limits(file_path="config/joint_limits.yaml")
-        .planning_scene_monitor(
-            publish_robot_description= True, publish_robot_description_semantic=True, publish_planning_scene=True
+        if use_fake_hardware.lower() == 'false':
+            moveit_config_file = "config/moveit_controllers_real_robot.yaml"
+            log1 = LogInfo( msg=['Loading Controllers for Real Robot'] )
+        else:
+            moveit_config_file = "config/moveit_controllers_simulation.yaml"
+            log1 = LogInfo( msg=['Loading Controllers for Simulation'] )
+
+        moveit_config = (
+            MoveItConfigsBuilder("wrs_cell_v2", package_name="wrs_env_v2_moveit_config")
+            .robot_description(file_path="config/wrs_cell_v2.urdf.xacro",
+                mappings={
+                    "use_fake_hardware": LaunchConfiguration('use_fake_hardware'),
+                    "fake_sensor_commands": LaunchConfiguration('fake_sensor_commands'),
+                    "robot_ip": LaunchConfiguration('robot_ip'),
+                })
+            .robot_description_semantic(file_path="config/wrs_cell_v2.srdf")
+            .trajectory_execution(file_path=moveit_config_file)
+            .robot_description_kinematics(file_path="config/kinematics.yaml")
+            .joint_limits(file_path="config/joint_limits.yaml")
+            .planning_scene_monitor(
+                publish_robot_description= True, publish_robot_description_semantic=True, publish_planning_scene=True
+            )
+            .planning_pipelines(
+                pipelines=["chomp", "ompl", "pilz_industrial_motion_planner"],
+                default_planning_pipeline="pilz_industrial_motion_planner"
+            )
+            .to_moveit_configs()
         )
-        .planning_pipelines(
-            pipelines=["chomp", "ompl", "pilz_industrial_motion_planner"],
-            default_planning_pipeline="pilz_industrial_motion_planner"
+        # print("Planning pipeline config file:", moveit_config.planning_pipelines)
+
+        rviz_config = PathJoinSubstitution(
+            [FindPackageShare("wrs_env_v2_moveit_config"), "config", "moveit.rviz"]
         )
-        .to_moveit_configs()
-    )
-    print("Planning pipeline config file:", moveit_config.planning_pipelines)
 
-    rviz_config = PathJoinSubstitution(
-        [FindPackageShare("wrs_env_v2_moveit_config"), "config", "moveit.rviz"]
-    )
+        joint_controllers_file = os.path.join(
+            get_package_share_directory('wrs_env_v2_moveit_config'), 'config', 'ros2_controllers.yaml'
+        )
 
-    joint_controllers_file = os.path.join(
-        get_package_share_directory('wrs_env_v2_moveit_config'), 'config', 'ros2_controllers.yaml'
-    )
-
-    # Robot State Publisher
-    # When using real robot, make sure UR driver is launched with robot_state_pub_node:=false
-    robot_state_publisher_node = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="screen",
-        parameters=[
-            moveit_config.robot_description,
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-        ],
-    )
-
-    # Controller Manager - only for simulation (fake hardware)
-    controller_manager_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[
-            moveit_config.robot_description,
-            joint_controllers_file,
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-        ],
-        output="screen",
-        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
-    )
-
-    # Spawners for simulation controllers - only when using fake hardware
-    ur5_arm_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["ur5_arm_controller", "--controller-manager", "/controller_manager"],
-        output="screen",
-        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
-    )
-
-    hand_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["hand_controller", "--controller-manager", "/controller_manager"],
-        output="screen",
-        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
-    )
-
-    # Hand/Gripper controller - only for simulation
-    # For real robot, gripper needs separate driver/controller setup
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
-        output="screen",
-        condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
-    )
-
-    # Spawner for real robot controller - starts scaled_joint_trajectory_controller from UR driver
-    # The UR driver loads this controller but doesn't start it by default
-    scaled_joint_trajectory_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["scaled_joint_trajectory_controller", "--controller-manager", "/controller_manager"],
-        output="screen",
-        condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
-    )
-
-    move_group_node = Node(
-        package="moveit_ros_move_group",
-        executable="move_group",
-        output="screen",
-        parameters=[
-            moveit_config.to_dict(),
-            {'use_sim_time': LaunchConfiguration('use_sim_time')},
-            {"trajectory_execution.allowed_start_tolerance": 0.05},
-            {"trajectory_execution.allowed_goal_duration_margin": 0.5},
-            # {"publish_robot_description_semantic": True},
-            # {"default_planner_pipeline": "ompl"},
-            # {"ompl.planning_plugin": "ompl_interface/OMPLPlanner"},
-            # {"planning_plugin": "ompl_interface/OMPLPlanner"},
-            # {"ompl.default_planner_config": "RRTConnect"},
-            {"log_level": "DEBUG"},
-        ],
-    )
-
-    rviz_node = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="screen",
-        arguments=["-d", rviz_config],
-        parameters=[moveit_config.to_dict()],
-    )
-
-    moveit_nodes_timer = TimerAction(
-        period=8.0,
-        actions=[GroupAction(
-            actions=[
-                move_group_node,
-                rviz_node,
+        # Robot State Publisher
+        # When using real robot, make sure UR driver is launched with robot_state_pub_node:=false
+        robot_state_publisher_node = Node(
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            output="screen",
+            parameters=[
+                moveit_config.robot_description,
+                {'use_sim_time': LaunchConfiguration('use_sim_time')},
             ],
-        )]
-    )
+        )
 
-    # remap /force_torque_sensor_broadcaster/wrench to /tool_wrench (when using real robot)
-    tool_wrench_remap = Node(
-        package="topic_tools",
-        executable="relay",
-        arguments=["/force_torque_sensor_broadcaster/wrench", "/tool_wrench"],
-        output="log",
-        condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
-    )
+        # Controller Manager - only for simulation (fake hardware)
+        controller_manager_node = Node(
+            package="controller_manager",
+            executable="ros2_control_node",
+            parameters=[
+                moveit_config.robot_description,
+                joint_controllers_file,
+                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+            ],
+            output="screen",
+            condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
+        )
 
-    # Gripper joint state publisher - adds gripper joint to joint states for real robot
-    # This node subscribes to /joint_states from UR driver, adds the gripper joint,
-    # and republishes. It checks if gripper joint already exists to avoid feedback loops.
-    gripper_joint_state_publisher = Node(
-        package="wrs_cell_description",
-        executable="gripper_joint_state_publisher.py",
-        name="gripper_joint_state_publisher",
-        output="screen",
-        condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
-    )
+        # Spawners for simulation controllers - only when using fake hardware
+        ur5_arm_controller_spawner = Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["ur5_arm_controller", "--controller-manager", "/controller_manager"],
+            output="screen",
+            condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
+        )
 
-    return LaunchDescription(declared_arguments + [
-        robot_state_publisher_node,
-        controller_manager_node,
-        ur5_arm_controller_spawner,
-        hand_controller_spawner,
-        joint_state_broadcaster_spawner,
-        scaled_joint_trajectory_controller_spawner,
-        gripper_joint_state_publisher,
-        moveit_nodes_timer,
-        tool_wrench_remap,
+        hand_controller_spawner = Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["hand_controller", "--controller-manager", "/controller_manager"],
+            output="screen",
+            condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
+        )
+
+        # Hand/Gripper controller - only for simulation
+        # For real robot, gripper needs separate driver/controller setup
+        joint_state_broadcaster_spawner = Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+            output="screen",
+            condition=IfCondition(LaunchConfiguration('use_fake_hardware'))
+        )
+
+        # Spawner for real robot controller - starts scaled_joint_trajectory_controller from UR driver
+        # The UR driver loads this controller but doesn't start it by default
+        scaled_joint_trajectory_controller_spawner = Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["scaled_joint_trajectory_controller", "--controller-manager", "/controller_manager"],
+            output="screen",
+            condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
+        )
+
+        move_group_node = Node(
+            package="moveit_ros_move_group",
+            executable="move_group",
+            output="screen",
+            parameters=[
+                moveit_config.to_dict(),
+                {'use_sim_time': LaunchConfiguration('use_sim_time')},
+                {"trajectory_execution.allowed_start_tolerance": 0.05},
+                {"trajectory_execution.allowed_goal_duration_margin": 0.5},
+                # {"publish_robot_description_semantic": True},
+                # {"default_planner_pipeline": "ompl"},
+                # {"ompl.planning_plugin": "ompl_interface/OMPLPlanner"},
+                # {"planning_plugin": "ompl_interface/OMPLPlanner"},
+                # {"ompl.default_planner_config": "RRTConnect"},
+                {"log_level": "DEBUG"},
+            ],
+        )
+
+        rviz_node = Node(
+            package="rviz2",
+            executable="rviz2",
+            name="rviz2",
+            output="screen",
+            arguments=["-d", rviz_config],
+            parameters=[moveit_config.to_dict()],
+        )
+
+        moveit_nodes_timer = TimerAction(
+            period=8.0,
+            actions=[GroupAction(
+                actions=[
+                    move_group_node,
+                    rviz_node,
+                ],
+            )]
+        )
+
+        # remap /force_torque_sensor_broadcaster/wrench to /tool_wrench (when using real robot)
+        tool_wrench_remap = Node(
+            package="topic_tools",
+            executable="relay",
+            arguments=["/force_torque_sensor_broadcaster/wrench", "/tool_wrench"],
+            output="log",
+            condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
+        )
+
+        # Gripper joint state publisher - adds gripper joint to joint states for real robot
+        # This node subscribes to /joint_states from UR driver, adds the gripper joint,
+        # and republishes. It checks if gripper joint already exists to avoid feedback loops.
+        gripper_joint_state_publisher = Node(
+            package="wrs_cell_description",
+            executable="gripper_joint_state_publisher.py",
+            name="gripper_joint_state_publisher",
+            output="screen",
+            condition=UnlessCondition(LaunchConfiguration('use_fake_hardware'))
+        )
+
+        return [
+            log1,
+            robot_state_publisher_node,
+            controller_manager_node,
+            ur5_arm_controller_spawner,
+            hand_controller_spawner,
+            joint_state_broadcaster_spawner,
+            scaled_joint_trajectory_controller_spawner,
+            gripper_joint_state_publisher,
+            moveit_nodes_timer,
+            tool_wrench_remap,
+        ]
+    
+    return LaunchDescription([
+        *declared_arguments,
+        OpaqueFunction(function=launch_setup)
     ])
