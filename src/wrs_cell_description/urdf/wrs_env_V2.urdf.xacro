@@ -7,10 +7,7 @@
     <xacro:arg name="use_fake_hardware" default="false"/>
     <xacro:arg name="fake_sensor_commands" default="false"/>
     <xacro:arg name="robot_ip" default="192.168.1.102"/>
-
-    <!-- gripper tcp offset - from base of the robotiq to tip of the fingers in closed position -->
-    <!-- reference: https://assets.robotiq.com/website-assets/support_documents/document/online/2F-85_2F-140_TM_InstructionManual_HTML5_20190503.zip/2F-85_2F-140_TM_InstructionManual_HTML5/Content/6.%20Specifications.htm -->
-    <xacro:property name="gripper_tcp_offset" value="0.1628" /> <!--might add 14mm if added the coulping piece -->
+    
 
     <!-- suction gripper properties -->
     <xacro:property name="thickness_of_the_suction_cup" value="0.030" /> <!-- 30mm -->
@@ -19,8 +16,7 @@
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
 
     <!-- gripper -->
-    <xacro:arg name="com_port" default="/dev/ttyUSB0" />
-    <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro" />
+    <xacro:arg name="com_port" default="/dev/ttyUSB0" />    
 
     <!-- arm -->
     <!-- Instantiate UR5e arm with official macro -->
@@ -86,7 +82,6 @@
           <mesh filename="package://robot_description/meshes/gripper_adapter.stl" scale="0.001 0.001 0.001"/>
         </geometry>
       </collision>
-      <!-- TODO: check inertia -->
       <inertial>
         <origin xyz="2.073e-05   1.45286e-03  -1.1049e-03" rpy="0 0 0" />
         <mass value="0.168" />
@@ -102,18 +97,30 @@
       <child link="${arm_prefix}gripper_adapter"/>
     </joint>
 
-    <!-- Attach the robotiq 85 gripper -->
-    <xacro:robotiq_gripper name="RobotiqGripperHardwareInterface" prefix="${arm_prefix}" parent="${arm_prefix}gripper_adapter" use_fake_hardware="$(arg use_fake_hardware)" com_port="$(arg com_port)">
-        <origin xyz="-0.03299 0.0 0.07114" rpy="${0} ${pi/2-5*pi/6} 0"/>
+    <!-- ======================================== Robotiq gripper ======================================== -->
+    <link name="${arm_prefix}robotiq_attaching_point" />
+    <!-- gripper tcp offset - from base of the robotiq to tip of the fingers in closed position -->
+    <!-- reference: https://assets.robotiq.com/website-assets/support_documents/document/online/2F-85_2F-140_TM_InstructionManual_HTML5_20190503.zip/2F-85_2F-140_TM_InstructionManual_HTML5/Content/6.%20Specifications.htm -->
+    <xacro:property name="gripper_tcp_offset" value="0.2333" /> <!--without coupling thickness -->
+    <xacro:property name="robotiq_coupling_thickness" value="0.0169" />
+    <joint name="${arm_prefix}robotiq_attaching_point_joint" type="fixed">
+        <parent link="${arm_prefix}gripper_adapter"/>
+        <child link="${arm_prefix}robotiq_attaching_point"/>
+        <origin xyz="-0.03299 0.0 0.07114" rpy="0 -${pi/3} 0"/>
+    </joint>
+    <!-- <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro" /> -->
+    <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_140_macro.urdf.xacro" />
+    <xacro:robotiq_gripper name="RobotiqGripperHardwareInterface" prefix="${arm_prefix}" parent="${arm_prefix}robotiq_attaching_point" use_fake_hardware="$(arg use_fake_hardware)" com_port="$(arg com_port)">
+        <origin xyz="0 0 ${robotiq_coupling_thickness}" rpy="0 0 0"/>
     </xacro:robotiq_gripper>
 
     <!-- Robotiq Gripper Tool Center Point (TCP) - Frame between gripper fingers -->
     <link name="${arm_prefix}gripper_tcp" />
     <joint name="${arm_prefix}gripper_tcp_joint" type="fixed">
-        <parent link="${arm_prefix}robotiq_85_base_link"/>
+        <parent link="${arm_prefix}robotiq_base_link"/>
         <child link="${arm_prefix}gripper_tcp"/>
         <!-- Position at the center between the gripper fingers -->
-        <origin xyz="0.0 0.0 ${gripper_tcp_offset}" rpy="0 0 0"/>
+        <origin xyz="0.0 0.0 ${gripper_tcp_offset + robotiq_coupling_thickness}" rpy="0 0 0"/>
     </joint>
 
     <!-- suction gripper mount frame - represents the position of the center of the branch to which the suction gripper is mounted -->
