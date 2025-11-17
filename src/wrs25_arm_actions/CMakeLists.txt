@@ -117,7 +117,6 @@ install(PROGRAMS
   scripts/robotiq_gripper.py
   scripts/robotiq_gripper_action_server.py
   scripts/robotiq_gripper_action_client.py
-  scripts/test_robotiq_gripper.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
