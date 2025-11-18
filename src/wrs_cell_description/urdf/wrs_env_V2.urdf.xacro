@@ -16,7 +16,10 @@
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
 
     <!-- gripper -->
-    <xacro:arg name="com_port" default="/dev/ttyUSB0" />    
+    <xacro:arg name="com_port" default="/dev/ttyUSB0" />
+
+    <!-- cobot station height-->
+    <xacro:property name="cobot_station_height" value="0.91"/>
 
     <!-- arm -->
     <!-- Instantiate UR5e arm with official macro -->
@@ -92,7 +95,7 @@
 
 
     <joint name="${arm_prefix}gripper_adapter_joint" type="fixed">
-      <origin xyz="-0.006 0 0" rpy="0 ${pi/2.0} 0" />
+      <origin xyz="-0.006 0 0" rpy="0 ${pi/2} 0" />
       <parent link="${arm_prefix}flange_rotated_link"/>
       <child link="${arm_prefix}gripper_adapter"/>
     </joint>
@@ -104,31 +107,33 @@
     <xacro:property name="gripper_tcp_offset" value="0.2333" /> <!--without coupling thickness -->
     <xacro:property name="robotiq_coupling_thickness" value="0.0169" />
     <joint name="${arm_prefix}robotiq_attaching_point_joint" type="fixed">
-        <parent link="${arm_prefix}gripper_adapter"/>
+        <parent link="${arm_prefix}flange_rotated_link"/>
         <child link="${arm_prefix}robotiq_attaching_point"/>
-        <origin xyz="-0.03299 0.0 0.07114" rpy="0 -${pi/3} 0"/>
+        <origin xyz="0.052123 0.0 0.037123" rpy="0 -${pi/4} 0"/>
     </joint>
     <!-- <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro" /> -->
     <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_140_macro.urdf.xacro" />
-    <xacro:robotiq_gripper name="RobotiqGripperHardwareInterface" prefix="${arm_prefix}" parent="${arm_prefix}robotiq_attaching_point" use_fake_hardware="$(arg use_fake_hardware)" com_port="$(arg com_port)">
-        <origin xyz="0 0 ${robotiq_coupling_thickness}" rpy="0 0 0"/>
+    <xacro:robotiq_gripper name="RobotiqGripperHardwareInterface" prefix="${arm_prefix}"
+        parent="${arm_prefix}robotiq_attaching_point" use_fake_hardware="$(arg use_fake_hardware)" com_port="$(arg com_port)">
+        <origin xyz="0 ${-robotiq_coupling_thickness} 0" rpy="${pi/2} 0 0"/>
     </xacro:robotiq_gripper>
 
     <!-- Robotiq Gripper Tool Center Point (TCP) - Frame between gripper fingers -->
     <link name="${arm_prefix}gripper_tcp" />
     <joint name="${arm_prefix}gripper_tcp_joint" type="fixed">
-        <parent link="${arm_prefix}robotiq_base_link"/>
+        <parent link="${arm_prefix}robotiq_attaching_point"/>
         <child link="${arm_prefix}gripper_tcp"/>
         <!-- Position at the center between the gripper fingers -->
-        <origin xyz="0.0 0.0 ${gripper_tcp_offset + robotiq_coupling_thickness}" rpy="0 0 0"/>
+        <!--origin xyz="0.0 0.0 0.252" rpy="0 0 0"/> TODO: hardcoded value -->
+        <origin xyz="${gripper_tcp_offset + robotiq_coupling_thickness} 0 0" rpy="0 ${pi/2} 0"/>
     </joint>
 
     <!-- suction gripper mount frame - represents the position of the center of the branch to which the suction gripper is mounted -->
-    <link name="${arm_prefix}suction_gripper_mount_frame" />
-    <joint name="${arm_prefix}suction_gripper_mount_frame_joint" type="fixed">
+    <link name="${arm_prefix}suction_gripper_attaching_point" />
+    <joint name="${arm_prefix}suction_gripper_attaching_point_joint" type="fixed">
         <parent link="${arm_prefix}flange_rotated_link"/>
-        <child link="${arm_prefix}suction_gripper_mount_frame"/>
-        <origin xyz="0.065141 0.0 -0.03299" rpy="0 ${pi/2 + pi/3} 0"/>
+        <child link="${arm_prefix}suction_gripper_attaching_point"/>
+        <origin xyz="0.052123 0.0 -0.037123" rpy="0 ${pi/2 + pi/4} 0"/>
     </joint>
     <!-- add suction gripper  -->
     <link name="${arm_prefix}suction_gripper" >
@@ -150,7 +155,7 @@
         </inertial>
     </link>
     <joint name="${arm_prefix}suction_gripper_joint" type="fixed">
-        <parent link="${arm_prefix}suction_gripper_mount_frame"/>
+        <parent link="${arm_prefix}suction_gripper_attaching_point"/>
         <child link="${arm_prefix}suction_gripper"/>
         <origin xyz="0.0 0.0 -0.0065" rpy="0 0 0"/>
     </joint>
@@ -158,7 +163,7 @@
     <!-- Suction Cup Tool Center Point (TCP) - Frame between suction cup -->
     <link name="${arm_prefix}suction_tcp" />
     <joint name="${arm_prefix}suction_tcp_joint" type="fixed">
-        <parent link="${arm_prefix}suction_gripper"/>
+        <parent link="${arm_prefix}suction_gripper_attaching_point"/>
         <child link="${arm_prefix}suction_tcp"/>
         <origin xyz="0 0 ${0.144 + thickness_of_the_suction_cup}" rpy="0 0 0"/>
     </joint>
@@ -195,7 +200,7 @@
     <!-- Rail -->
     <xacro:property name="rail_length" value="2.0"/>
     <xacro:property name="rail_width" value="0.8"/>
-    <xacro:property name="rail_height" value="0.8"/>
+    <xacro:property name="rail_height" value="0.745"/>
     <link name="rail_link">
         <visual>
             <geometry>
@@ -220,7 +225,7 @@
     <joint name="world_to_rail_joint" type="fixed">
         <parent link="world"/>
         <child link="rail_link"/>
-        <origin xyz="${rail_width/2 + 0.1} ${0/2} ${-rail_height/2 - 0.1}" rpy="0 0 ${pi/2}"/>
+        <origin xyz="${rail_width/2 + 0.1} ${0/2} ${-cobot_station_height+rail_height/2}" rpy="0 0 ${pi/2}"/>
     </joint>
 
 </robot>
