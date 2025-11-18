@@ -9,6 +9,7 @@ from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
+from std_msgs.msg import Float64
 
 from wrs25_arm_actions.action import RobotiqGripperControl
 import robotiq_gripper
@@ -33,6 +34,16 @@ class RobotiqGripperActionServer(Node):
         # Initialize gripper object
         self.gripper = None
         self.connected = False
+        
+        # Create publisher for gripper position (raw Robotiq position 0-255)
+        self.position_publisher = self.create_publisher(
+            Float64,
+            '/robotiq_gripper/position',
+            10
+        )
+        
+        # Create timer to periodically publish gripper position
+        self.publish_timer = self.create_timer(0.1, self.publish_position_callback)
         
         # Create action server
         self._action_server = ActionServer(
@@ -77,6 +88,21 @@ class RobotiqGripperActionServer(Node):
         """Accept or reject a client request to cancel an action."""
         self.get_logger().info('Received cancel request')
         return CancelResponse.ACCEPT
+
+    def publish_position_callback(self):
+        """Periodically publish current gripper position."""
+        if self.gripper is not None and self.connected:
+            try:
+                # Get current position from gripper
+                current_pos = self.gripper.get_current_position()
+                
+                # Publish position
+                msg = Float64()
+                msg.data = float(current_pos)
+                self.position_publisher.publish(msg)
+            except Exception as e:
+                # Silently fail to avoid spamming logs
+                pass
 
     def execute_callback(self, goal_handle):
         """Execute the action."""
