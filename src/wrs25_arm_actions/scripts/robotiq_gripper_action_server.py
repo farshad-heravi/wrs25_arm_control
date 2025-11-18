@@ -9,7 +9,7 @@ from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
-from std_msgs.msg import Float64
+from sensor_msgs.msg import JointState
 
 from wrs25_arm_actions.action import RobotiqGripperControl
 import robotiq_gripper
@@ -25,19 +25,22 @@ class RobotiqGripperActionServer(Node):
         self.declare_parameter('default_ip', '192.168.1.101')
         self.declare_parameter('default_port', 63352)
         self.declare_parameter('auto_connect', True)
+        self.declare_parameter('fake_joint_state', False) # publishes 0; for testing without real hardware
         
         # Get parameters
         self.default_ip = self.get_parameter('default_ip').value
         self.default_port = self.get_parameter('default_port').value
         auto_connect = self.get_parameter('auto_connect').value
-        
+        fake_joint_state = self.get_parameter('fake_joint_state').value
+        self.fake_joint_state = fake_joint_state
+
         # Initialize gripper object
         self.gripper = None
         self.connected = False
         
         # Create publisher for gripper position (raw Robotiq position 0-255)
         self.position_publisher = self.create_publisher(
-            Float64,
+            JointState,
             '/robotiq_gripper/position',
             10
         )
@@ -60,7 +63,7 @@ class RobotiqGripperActionServer(Node):
         self.get_logger().info(f'Default IP: {self.default_ip}, Port: {self.default_port}')
         
         # Auto-connect if requested
-        if auto_connect:
+        if auto_connect and not self.fake_joint_state:
             try:
                 self._connect_gripper(self.default_ip, self.default_port)
             except Exception as e:
@@ -91,14 +94,25 @@ class RobotiqGripperActionServer(Node):
 
     def publish_position_callback(self):
         """Periodically publish current gripper position."""
-        if self.gripper is not None and self.connected:
+        if self.fake_joint_state:
+            msg = JointState()
+            msg.name = ['ur5_finger_joint']
+            msg.position = [0.0]
+            msg.velocity = [0.0]
+            msg.effort = [0.0]
+            self.position_publisher.publish(msg)
+            return
+        elif self.gripper is not None and self.connected:
             try:
                 # Get current position from gripper
                 current_pos = self.gripper.get_current_position()
                 
                 # Publish position
-                msg = Float64()
-                msg.data = float(current_pos)
+                msg = JointState()
+                msg.name = ['ur5_finger_joint']
+                msg.position = [float(current_pos)]
+                msg.velocity = [0.0]
+                msg.effort = [0.0]
                 self.position_publisher.publish(msg)
             except Exception as e:
                 # Silently fail to avoid spamming logs
@@ -118,7 +132,8 @@ class RobotiqGripperActionServer(Node):
         
         try:
             # Connect to gripper if not already connected
-            self._connect_gripper(ip, port)
+            if not self.fake_joint_state:
+                self._connect_gripper(ip, port)
             
             # Determine target position based on command
             if request.command.lower() == 'open':
