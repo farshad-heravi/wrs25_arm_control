@@ -13,6 +13,7 @@ from sensor_msgs.msg import JointState
 
 from wrs25_arm_actions.action import RobotiqGripperControl
 import robotiq_gripper
+from control_msgs.action import GripperCommand
 
 
 class RobotiqGripperActionServer(Node):
@@ -33,6 +34,7 @@ class RobotiqGripperActionServer(Node):
         auto_connect = self.get_parameter('auto_connect').value
         fake_joint_state = self.get_parameter('fake_joint_state').value
         self.fake_joint_state = fake_joint_state
+        self.fake_joint_state_position = 0.0
 
         # Initialize gripper object
         self.gripper = None
@@ -56,6 +58,16 @@ class RobotiqGripperActionServer(Node):
             execute_callback=self.execute_callback,
             goal_callback=self.goal_callback,
             cancel_callback=self.cancel_callback,
+            callback_group=ReentrantCallbackGroup()
+        )
+
+        self._action_server_moveit = ActionServer(
+            self,
+            GripperCommand,
+            '/hand_controller/gripper_command',
+            execute_callback=self.execute_callback_moveit,
+            goal_callback=self.goal_callback_moveit,
+            cancel_callback=self.cancel_callback_moveit,
             callback_group=ReentrantCallbackGroup()
         )
         
@@ -97,7 +109,7 @@ class RobotiqGripperActionServer(Node):
         if self.fake_joint_state:
             msg = JointState()
             msg.name = ['ur5_finger_joint']
-            msg.position = [0.0]
+            msg.position = [self.fake_joint_state_position]
             msg.velocity = [0.0]
             msg.effort = [0.0]
             self.position_publisher.publish(msg)
@@ -200,6 +212,40 @@ class RobotiqGripperActionServer(Node):
                 self.get_logger().error(f'Error disconnecting gripper: {e}')
         super().destroy_node()
 
+
+    def execute_callback_moveit(self, goal_handle):
+        """Execute the action."""
+        self.get_logger().info('Executing goal...')
+        
+        request = goal_handle.request
+        desired_position = request.command.position
+        self.get_logger().info(f'requested position: {desired_position}')
+
+        goal_handle.succeed()
+        
+        result = GripperCommand.Result()
+        result.reached_goal = True
+        result.position = desired_position
+
+        if self.fake_joint_state:
+            self.fake_joint_state_position = desired_position
+        else:
+            self.gripper.move_and_wait_for_pos(
+                desired_position, 255, 255
+            )
+
+        self.get_logger().info('Goal succeeded')
+        return result
+
+    def goal_callback_moveit(self, goal_request):
+        """Accept or reject a client request to begin an action."""
+        self.get_logger().info('Received goal request')
+
+        return GoalResponse.ACCEPT
+
+    def cancel_callback_moveit(self, goal_handle):
+        """Accept or reject a client request to cancel an action."""
+        self.get_logger().info('Received cancel request')
 
 def main(args=None):
     rclpy.init(args=args)
