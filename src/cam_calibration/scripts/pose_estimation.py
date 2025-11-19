@@ -33,6 +33,12 @@ class BottlePoseNode(Node):
         # Chessboard to robot transformation (fixed/calibrated)
         self.T_ch_r = self.compute_chessboard_to_robot()
 
+        #
+        self.timer = self.create_timer(1.0/100, self.timer_callback)
+
+    def timer_callback(self):
+        self.compute_chessboard_to_robot()
+
     def camera_info_callback(self, msg):
         self.camera_info = msg
 
@@ -40,7 +46,7 @@ class BottlePoseNode(Node):
         if self.camera_info is None:
             self.get_logger().warn("Camera info not yet received")
             return
-
+            
         self.compute_bottle_pose(msg)
 
     def compute_chessboard_to_robot(self):
@@ -92,7 +98,7 @@ class BottlePoseNode(Node):
         point_cam = np.linalg.inv(K) @ pixel_coords
 
         # Step 3: Bottle -> camera homogeneous transformation
-        T_o_c = euler_matrix(rotation, 0, 0, 'rzyx')
+        T_o_c = euler_matrix(rotation, 0, 0, 'ryzx')
         T_o_c[:3, 3] = point_cam
 
         # Step 4: Lookup chessboard in camera frame (TF listener)
