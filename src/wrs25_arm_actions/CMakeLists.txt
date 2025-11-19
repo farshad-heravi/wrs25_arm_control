@@ -22,7 +22,6 @@ find_package(rclpy REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
   "action/GripperControl.action"
-  "action/VisionCheck.action"
   "action/RobotiqGripperControl.action"
   DEPENDENCIES geometry_msgs
 )
