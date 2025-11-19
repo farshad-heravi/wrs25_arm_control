@@ -80,8 +80,14 @@ class BottlePoseNode(Node):
         cy = pose_msg.pose.position.y
         rotation = pose_msg.pose.position.z  # bottle orientation in image plane
 
+        # Step 1.5: Undistort the points
+        K = np.array(self.camera_info.k).reshape(3, 3)
+        distortion = np.array(self.camera_info.d)
+
+        # Undistort the image
+        cx, cy = cv2.undistortPoints(np.array([cx, cy]), K, distortion, P=K)
+        
         # Step 2: Convert pixel to camera coordinates
-        K = np.array(self.camera_info.k).reshape(3,3)
         pixel_coords = np.array([cx, cy, 1.0])
         point_cam = np.linalg.inv(K) @ pixel_coords
 
