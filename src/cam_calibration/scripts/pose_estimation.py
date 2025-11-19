@@ -3,10 +3,10 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import CameraInfo
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, TransformStamped
 import numpy as np
 import tf2_ros
-from tf_transformations import euler_matrix, quaternion_from_matrix
+from tf_transformations import euler_matrix, quaternion_from_matrix, quaternion_matrix
 import cv2
 import math
 
@@ -15,8 +15,9 @@ class BottlePoseNode(Node):
         super().__init__('bottle_pose_node')
 
         # Subscribers
-        self.camera_info_sub = self.create_subscription(CameraInfo, '/camera/color/camera_info', self.camera_info_callback, 10)
+        self.camera_info_sub = self.create_subscription(CameraInfo, '/camera/camera/color/camera_info', self.camera_info_callback, 10)
         self.pose_sub = self.create_subscription(PoseStamped, '/bottle_pixel_pose', self.pose_callback, 10)
+
 
         # Publisher
         self.pub_pose = self.create_publisher(PoseStamped, '/bottle_pose', 10)
@@ -46,22 +47,41 @@ class BottlePoseNode(Node):
         """
         Returns 4x4 homogeneous transformation from chessboard to robot base.
         """
-        pos_ch_r = np.array([-0.11417, -0.61179, -0.074])
-        euler_ch_r = np.array([math.pi, 0.0, 0.0])
-        R_ch_r, _ = cv2.Rodrigues(euler_ch_r)
+        pos_ch_r = np.array([0.3378, -0.5781, -0.1595])
+        # euler_ch_r = np.array([math.pi, 0.0, 0.0])
+        # R_ch_r, _ = cv2.Rodrigues(R_ch_r[:3,:3])
+        quaternion = np.array([0.0026, -0.7053, 0.7089, -0.0002]) #wxyz
+        R_ch_r = quaternion_matrix(quaternion)
+        R_ch_r = R_ch_r[:3,:3]
         T_ch_r = np.eye(4)
         T_ch_r[:3, :3] = R_ch_r
         T_ch_r[:3, 3] = pos_ch_r
+
+        # publish chessboard world tf
+        world_c_quat = quaternion_from_matrix(T_ch_r)
+        t = TransformStamped()
+        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.frame_id = "ur5_base"
+        t.child_frame_id = "chessboard"
+        t.transform.translation.x = T_ch_r[3,0]
+        t.transform.translation.y = T_ch_r[3,1]
+        t.transform.translation.z = T_ch_r[3,2]
+        t.transform.rotation.x = world_c_quat[1]
+        t.transform.rotation.y = world_c_quat[2]
+        t.transform.rotation.z = world_c_quat[3]
+        t.transform.rotation.w = world_c_quat[0]
+        self.tf_broadcaster.sendTransform(t)
+
         return T_ch_r
 
     def compute_bottle_pose(self, pose_msg):
         # Step 1: Bottle pixel coordinates
-        cx = pose_msg.position.x
-        cy = pose_msg.position.y
-        rotation = pose_msg.position.z  # bottle orientation in image plane
+        cx = pose_msg.pose.position.x
+        cy = pose_msg.pose.position.y
+        rotation = pose_msg.pose.position.z  # bottle orientation in image plane
 
         # Step 2: Convert pixel to camera coordinates
-        K = np.array(self.camera_info.K).reshape(3,3)
+        K = np.array(self.camera_info.k).reshape(3,3)
         pixel_coords = np.array([cx, cy, 1.0])
         point_cam = np.linalg.inv(K) @ pixel_coords
 
@@ -71,25 +91,41 @@ class BottlePoseNode(Node):
 
         # Step 4: Lookup chessboard in camera frame (TF listener)
         try:
-            tf_listener = tf.TransformListener()
-            trans, quat = tf_listener.lookupTransform('/camera', '/chessboard', rclpy.Time(0))
+            t = self.tf_buffer.lookup_transform(
+                'camera',
+                'chessboard',
+                rclpy.time.Time(),  # Lookup at the latest available time
+                timeout=rclpy.duration.Duration(seconds=0.1)
+            )
+            trans = [t.transform.translation.x, t.transform.translation.y, t.transform.translation.z]
+            quat_msg = t.transform.rotation
+            quat = [quat_msg.x, quat_msg.y, quat_msg.z, quat_msg.w]
             T_ch_c = quaternion_matrix(quat)
             T_ch_c[:3, 3] = trans
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             self.get_logger().warn("Chessboard TF not found")
             return
+
+        
 
         # Step 5: Compute bottle -> robot
         T_o_r = self.T_ch_r @ np.linalg.inv(T_ch_c) @ T_o_c
 
+        quat_final = quaternion_from_matrix(T_o_r)
+
         # Step 6: Broadcast TF
-        self.tf_broadcaster.sendTransform(
-            tuple(T_o_r[:3, 3]),
-            quaternion_from_matrix(T_o_r),
-            self.get_clock().now().to_msg(),
-            'bottle_frame',
-            'world'
-        )
+        t = TransformStamped()
+        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.frame_id = "world"
+        t.child_frame_id = "bottle_frame"
+        t.transform.translation.x = T_o_r[3,0]
+        t.transform.translation.y = T_o_r[3,1]
+        t.transform.translation.z = T_o_r[3,2]
+        t.transform.rotation.x = quat_final[1]
+        t.transform.rotation.y = quat_final[2]
+        t.transform.rotation.z = quat_final[3]
+        t.transform.rotation.w = quat_final[0]
+        self.tf_broadcaster.sendTransform(t)
 
         # Step 7: Publish PoseStamped
         pose_out = PoseStamped()
@@ -106,6 +142,9 @@ class BottlePoseNode(Node):
 
         self.pub_pose.publish(pose_out)
         self.get_logger().info(f"Bottle pose published: {pose_out.pose.position}")
+
+
+        # publish world chessboard tf
 
     '''
     def computeBottlePose(self, rect, idx):

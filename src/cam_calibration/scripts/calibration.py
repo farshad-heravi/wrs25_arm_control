@@ -10,6 +10,8 @@ from geometry_msgs.msg import TransformStamped
 import tf2_ros
 import tf_transformations
 
+flag_imshow = False
+
 class CameraPoseEstimation(Node):
     def __init__(self):
         super().__init__('camera_pose_estimation_node')
@@ -81,6 +83,11 @@ class CameraPoseEstimation(Node):
 
                 # Solve PnP
                 ret, self.rvec, self.tvec = cv2.solvePnP(objp, corners, intrinsics, None)
+                axes_im = cv2.drawFrameAxes(self.dst, intrinsics, None, self.rvec, self.tvec, 0.025, 3)
+                
+                if flag_imshow:
+                    cv2.imshow("Axes", axes_im)
+                    cv2.waitKey()
                 self.calibrated = True
                 self.get_logger().info("Camera Calibrated!")
             else:
