@@ -48,7 +48,11 @@ ros2 launch wrs_cell_description start_moveit.launch.py
 ```
 ros2 launch wrs25_arm_actions go_to_pose_action.launch.py
 ```
-
+### Launch MoveIt with Real Robot
+```
+ros2 launch wrs25_moveit_config start_moveit.launch.py use_real_robot:=true robot_ip:=192.168.1.101
+```
+add `fake_robotiq_gripper:=true` if you are not connected to real Robotiq gripper.
 
 ## Actions
 
