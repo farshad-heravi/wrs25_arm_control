@@ -61,7 +61,7 @@ class BottlePoseNode(Node):
         world_c_quat = quaternion_from_matrix(T_ch_r)
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = "ur5_base"
+        t.header.frame_id = "world"
         t.child_frame_id = "chessboard"
         t.transform.translation.x = T_ch_r[3,0]
         t.transform.translation.y = T_ch_r[3,1]

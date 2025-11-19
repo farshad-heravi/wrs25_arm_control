@@ -13,7 +13,8 @@ import yaml
 import os
 
 flag_imshow = False
-CALIB_PATH = os.path.expanduser("~/.camera_calibration.yaml")
+pwd = os.path.dirname(os.path.abspath(__file__))
+CALIB_PATH = os.path.join(pwd, "calibration.yaml")
 
 class CameraPoseEstimation(Node):
     def __init__(self):
@@ -129,7 +130,7 @@ class CameraPoseEstimation(Node):
                 objp *= 0.025
 
                 ret, rvec, tvec = cv2.solvePnP(objp, corners, intrinsics, None)
-                axes_im = cv2.drawFrameAxes(self.dst, intrinsics, None, self.rvec, self.tvec, 0.025, 3)
+                axes_im = cv2.drawFrameAxes(self.dst, intrinsics, None, rvec, tvec, 0.025, 3)
                 
                 if flag_imshow:
                     cv2.imshow("Axes", axes_im)
