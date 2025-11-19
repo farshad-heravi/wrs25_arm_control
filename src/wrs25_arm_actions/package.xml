@@ -4,7 +4,10 @@
   <name>wrs25_arm_actions</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
+  <author email="f.n.heravi@gmail.com">Farshad Nozad Heravi</author>
+  <author email="fraumalex@gmail.com">alefram</author>
   <maintainer email="fraumalex@gmail.com">alefram</maintainer>
+  <maintainer email="f.n.heravi@gmail.com">Farshad Nozad Heravi</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
