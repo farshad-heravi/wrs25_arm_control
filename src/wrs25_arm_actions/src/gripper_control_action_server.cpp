@@ -42,7 +42,7 @@ private:
     rclcpp_action::Server<GripperControl>::SharedPtr action_server_;
     rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
-    std::string gripper_joint_name_ = "ur5_robotiq_85_left_knuckle_joint";
+    std::string gripper_joint_name_ = "ur5_finger_joint";
     double current_joint_position_ = 0.0;
     int gripper_joint_index_ = -1;
 
