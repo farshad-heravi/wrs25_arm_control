@@ -57,8 +57,15 @@ class CameraPoseEstimation(Node):
 
         # TF broadcaster
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+        self.camera_frame = None
+        self.camera_frame_timer = self.create_timer(1.0/200, self.camera_frame_timer_callback)
 
         self.get_logger().info("Camera Pose Estimation Node Started")
+
+    def camera_frame_timer_callback(self):
+        if self.camera_frame is not None:
+            self.camera_frame.header.stamp = self.get_clock().now().to_msg()
+            self.tf_broadcaster.sendTransform(self.camera_frame)
 
     # -------------------- YAML LOAD & SAVE --------------------
 
@@ -157,6 +164,7 @@ class CameraPoseEstimation(Node):
             axis = self.rvec.reshape(3) / ang
             quat = tf_transformations.quaternion_about_axis(ang, axis)
 
+
             t = TransformStamped()
             t.header.stamp = self.get_clock().now().to_msg()
             t.header.frame_id = "camera"
@@ -170,6 +178,7 @@ class CameraPoseEstimation(Node):
             t.transform.rotation.y = quat[1]
             t.transform.rotation.z = quat[2]
             t.transform.rotation.w = quat[3]
+            self.camera_frame = t
 
             self.tf_broadcaster.sendTransform(t)
 

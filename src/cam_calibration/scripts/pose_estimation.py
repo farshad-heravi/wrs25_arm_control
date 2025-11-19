@@ -34,7 +34,7 @@ class BottlePoseNode(Node):
         self.T_ch_r = self.compute_chessboard_to_robot()
 
         #
-        self.timer = self.create_timer(1.0/100, self.timer_callback)
+        self.timer = self.create_timer(1.0/200, self.timer_callback)
 
     def timer_callback(self):
         self.compute_chessboard_to_robot()
@@ -69,9 +69,9 @@ class BottlePoseNode(Node):
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "world"
         t.child_frame_id = "chessboard"
-        t.transform.translation.x = T_ch_r[3,0]
-        t.transform.translation.y = T_ch_r[3,1]
-        t.transform.translation.z = T_ch_r[3,2]
+        t.transform.translation.x = T_ch_r[0,3]
+        t.transform.translation.y = T_ch_r[1,3]
+        t.transform.translation.z = T_ch_r[2,3]
         t.transform.rotation.x = world_c_quat[1]
         t.transform.rotation.y = world_c_quat[2]
         t.transform.rotation.z = world_c_quat[3]
@@ -94,6 +94,7 @@ class BottlePoseNode(Node):
         udP = cv2.undistortPoints(np.array([[cx, cy]]), K, distortion, P=K)
         
         # Step 2: Convert pixel to camera coordinates
+        udP = udP[0]
         pixel_coords = np.array([udP[0,0], udP[0,1], 1.0])
         point_cam = np.linalg.inv(K) @ pixel_coords
 
@@ -130,9 +131,9 @@ class BottlePoseNode(Node):
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = "world"
         t.child_frame_id = "bottle_frame"
-        t.transform.translation.x = T_o_r[3,0]
-        t.transform.translation.y = T_o_r[3,1]
-        t.transform.translation.z = T_o_r[3,2]
+        t.transform.translation.x = T_o_r[0,3]
+        t.transform.translation.y = T_o_r[1,3]
+        t.transform.translation.z = T_o_r[2,3]
         t.transform.rotation.x = quat_final[1]
         t.transform.rotation.y = quat_final[2]
         t.transform.rotation.z = quat_final[3]
