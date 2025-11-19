@@ -12,6 +12,7 @@ import tf_transformations
 import yaml
 import os
 
+flag_imshow = False
 CALIB_PATH = os.path.expanduser("~/.camera_calibration.yaml")
 
 class CameraPoseEstimation(Node):
@@ -128,7 +129,12 @@ class CameraPoseEstimation(Node):
                 objp *= 0.025
 
                 ret, rvec, tvec = cv2.solvePnP(objp, corners, intrinsics, None)
-
+                axes_im = cv2.drawFrameAxes(self.dst, intrinsics, None, self.rvec, self.tvec, 0.025, 3)
+                
+                if flag_imshow:
+                    cv2.imshow("Axes", axes_im)
+                    cv2.waitKey()
+                    
                 if ret:
                     self.rvec = rvec
                     self.tvec = tvec
