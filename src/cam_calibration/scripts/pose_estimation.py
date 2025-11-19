@@ -85,10 +85,10 @@ class BottlePoseNode(Node):
         distortion = np.array(self.camera_info.d)
 
         # Undistort the image
-        cx, cy = cv2.undistortPoints(np.array([cx, cy]), K, distortion, P=K)
+        udP = cv2.undistortPoints(np.array([[cx, cy]]), K, distortion, P=K)
         
         # Step 2: Convert pixel to camera coordinates
-        pixel_coords = np.array([cx, cy, 1.0])
+        pixel_coords = np.array([udP[0,0], udP[0,1], 1.0])
         point_cam = np.linalg.inv(K) @ pixel_coords
 
         # Step 3: Bottle -> camera homogeneous transformation
