@@ -15,6 +15,7 @@ find_package(ament_cmake REQUIRED)
 # Install Python scripts
 install(PROGRAMS
   scripts/calibration.py
+  scripts/calibration_v2.py
   scripts/pose_estimation.py
   DESTINATION lib/${PROJECT_NAME}
 )
