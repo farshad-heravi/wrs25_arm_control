@@ -103,6 +103,15 @@ def generate_launch_description():
             .to_moveit_configs()
         )
 
+        # Robot State Publisher
+        robot_state_publisher_node = Node(
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            name="robot_state_publisher",
+            parameters=[moveit_config.robot_description, {'use_sim_time': use_sim_time == 'true'}],
+            output="screen"
+        )
+
         # include ur_robot_bringup.py
         ur_robot_bringup_node = IncludeLaunchDescription(
                     PythonLaunchDescriptionSource(
@@ -118,7 +127,7 @@ def generate_launch_description():
                 )
 
         # Robot State Publisher - Merger node
-        robot_state_publisher_node = Node(
+        robot_joint_state_merger_node = Node(
             package="wrs25_moveit_config",
             executable="joint_state_merger.py",
             output="screen",
@@ -222,6 +231,7 @@ def generate_launch_description():
         return [
             ur_robot_bringup_node,
             robot_state_publisher_node,
+            robot_joint_state_merger_node,
             robotiq_gripper_action_server_node,
             controller_manager_node,
             scaled_joint_trajectory_controller_spawner, 
