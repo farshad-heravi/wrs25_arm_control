@@ -1,0 +1,47 @@
+planning_plugin: ompl_interface/OMPLPlanner
+
+ompl:
+  planning_plugin: ompl_interface/OMPLPlanner
+  request_adapters:
+    - default_planner_request_adapters/AddRuckigTimeParameterization
+    - default_planner_request_adapters/FixWorkspaceBounds
+    - default_planner_request_adapters/FixStartStateBounds
+    - default_planner_request_adapters/FixStartStateCollision
+    - default_planner_request_adapters/FixStartStatePathConstraints
+
+# OMPL-specific parameters
+default_planner_config: RRTConnect
+
+planner_configs:
+  RRTConnect:
+    type: geometric::RRTConnect
+    range: 0.1  
+    longest_valid_segment_fraction: 0.005
+    max_nearest_neighbors: 100
+  RRTstar:
+    type: geometric::RRTstar
+    range: 0.1  
+    longest_valid_segment_fraction: 0.005
+    max_nearest_neighbors: 100
+    goal_bias: 0.05
+    delay_collision_checking: 1
+  PRMstar:
+    type: geometric::PRMstar
+    range: 0.1  
+    max_nearest_neighbors: 100
+    delay_collision_checking: 1
+
+# Group-specific planner configurations
+ur5_arm:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+    - RRTstar
+    - PRMstar
+
+hand:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect
+    - RRTstar
+

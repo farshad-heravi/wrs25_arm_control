@@ -1,0 +1,31 @@
+# Limits for the Pilz planner
+cartesian_limits:
+  max_trans_vel: 1.0
+  max_trans_acc: 2.25
+  max_trans_dec: -5.0
+  max_rot_vel: 3.14
+
+ur5_arm: 
+  default_planner_config: LIN
+  planner_configs:
+    - PTP
+    - LIN
+    - CIRC
+
+planner_configs:
+  # 1. Point-to-Point (PTP) Planner
+  PTP:
+    # This planner moves the robot from A to B via a joint-space interpolation.
+    # It primarily uses the joint_limits.yaml for velocity/acceleration checks.
+    # No additional parameters needed here unless you want to override default behavior.
+    pass
+
+  # 2. Linear (LIN) Planner
+  LIN:
+    # This planner enforces a straight-line motion in Cartesian space. It uses the general 'cartesian_limits' defined above.
+    pass
+
+  # 3. Circular (CIRC) Planner
+  CIRC:
+    # This planner enforces a circular motion in Cartesian space. It also uses the general 'cartesian_limits' defined above.
+    pass
