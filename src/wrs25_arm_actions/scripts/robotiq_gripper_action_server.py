@@ -106,6 +106,9 @@ class RobotiqGripperActionServer(Node):
             try:
                 # Get current position from gripper
                 current_pos = self.gripper.get_current_position()
+
+                # scale current position to 0-0.7 for 2f140 gripper
+                current_pos = current_pos / 255.0 * 0.7
                 
                 # Publish position
                 msg = JointState()
