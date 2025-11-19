@@ -72,6 +72,11 @@ private:
             RCLCPP_INFO(this->get_logger(), "MoveGroupInterface initialized for ur5_arm group.");
         }
 
+        // set max velocity and acceleration
+        // this->move_group_interface_->setMaxVelocityScalingFactor(0.5);
+        // this->move_group_interface_->setMaxAccelerationScalingFactor(0.5);
+        // RCLCPP_INFO(this->get_logger(), "Set max velocity and acceleration to 0.5");
+
         const auto goal = goal_handle->get_goal();
         auto result = std::make_shared<GoToPose::Result>();
 
