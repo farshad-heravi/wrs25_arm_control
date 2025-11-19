@@ -86,7 +86,7 @@ class BottlePoseNode(Node):
         point_cam = np.linalg.inv(K) @ pixel_coords
 
         # Step 3: Bottle -> camera homogeneous transformation
-        T_o_c = euler_matrix(rotation, 0, 0, 'ryzx')
+        T_o_c = euler_matrix(rotation, 0, 0, 'rzyx')
         T_o_c[:3, 3] = point_cam
 
         # Step 4: Lookup chessboard in camera frame (TF listener)
