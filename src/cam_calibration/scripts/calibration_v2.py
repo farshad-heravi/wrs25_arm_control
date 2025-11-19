@@ -58,7 +58,8 @@ class CameraPoseEstimation(Node):
         # TF broadcaster
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.camera_frame = None
-        self.camera_frame_timer = self.create_timer(1.0/200, self.camera_frame_timer_callback)
+        # self.camera_frame_timer = self.create_timer(1.0/200, self.camera_frame_timer_callback)
+        self.static_broadcaster = tf2_ros.StaticTransformBroadcaster(self)
 
         self.get_logger().info("Camera Pose Estimation Node Started")
 
@@ -167,8 +168,8 @@ class CameraPoseEstimation(Node):
 
             t = TransformStamped()
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = "camera"
-            t.child_frame_id = "chessboard"
+            t.header.frame_id = "/camera"
+            t.child_frame_id = "/chessboard"
 
             t.transform.translation.x = float(self.tvec[0])
             t.transform.translation.y = float(self.tvec[1])
@@ -178,17 +179,26 @@ class CameraPoseEstimation(Node):
             t.transform.rotation.y = quat[1]
             t.transform.rotation.z = quat[2]
             t.transform.rotation.w = quat[3]
-            self.camera_frame = t
 
-            self.tf_broadcaster.sendTransform(t)
+            # self.camera_frame = t
+
+            self.get_logger().info("Camera-Chessboard TF published!")
+
+            # self.tf_broadcaster.sendTransform(t)
+            self.static_broadcaster.sendTransform(t)
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = CameraPoseEstimation()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    # node.destroy_node()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
