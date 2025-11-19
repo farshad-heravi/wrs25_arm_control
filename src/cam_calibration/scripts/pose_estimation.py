@@ -26,6 +26,7 @@ class BottlePoseNode(Node):
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+        self.static_broadcaster = tf2_ros.StaticTransformBroadcaster(self)
 
         # Camera info
         self.camera_info = None
@@ -34,7 +35,7 @@ class BottlePoseNode(Node):
         self.T_ch_r = self.compute_chessboard_to_robot()
 
         #
-        self.timer = self.create_timer(1.0/200, self.timer_callback)
+        # self.timer = self.create_timer(1.0/200, self.timer_callback)
 
     def timer_callback(self):
         self.compute_chessboard_to_robot()
@@ -67,16 +68,18 @@ class BottlePoseNode(Node):
         world_c_quat = quaternion_from_matrix(T_ch_r)
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = "world"
+        t.header.frame_id = "world" # was world
         t.child_frame_id = "chessboard"
         t.transform.translation.x = T_ch_r[0,3]
         t.transform.translation.y = T_ch_r[1,3]
         t.transform.translation.z = T_ch_r[2,3]
-        t.transform.rotation.x = world_c_quat[1]
-        t.transform.rotation.y = world_c_quat[2]
-        t.transform.rotation.z = world_c_quat[3]
-        t.transform.rotation.w = world_c_quat[0]
-        self.tf_broadcaster.sendTransform(t)
+        t.transform.rotation.x = world_c_quat[0]
+        t.transform.rotation.y = world_c_quat[1]
+        t.transform.rotation.z = world_c_quat[2]
+        t.transform.rotation.w = world_c_quat[3]
+        # self.tf_broadcaster.sendTransform(t)
+        self.static_broadcaster.sendTransform(t)
+        self.get_logger().info("Chessboard to robot TF published!")
 
         return T_ch_r
 
@@ -95,7 +98,7 @@ class BottlePoseNode(Node):
         
         # Step 2: Convert pixel to camera coordinates
         udP = udP[0]
-        pixel_coords = np.array([udP[0,0], udP[0,1], 1.0])
+        pixel_coords = np.array([udP[0,0], udP[0,1], 1.0]).T
         point_cam = np.linalg.inv(K) @ pixel_coords
 
         # Step 3: Bottle -> camera homogeneous transformation
@@ -122,9 +125,40 @@ class BottlePoseNode(Node):
         
 
         # Step 5: Compute bottle -> robot
-        T_o_r = self.T_ch_r @ np.linalg.inv(T_ch_c) @ T_o_c
+        # T_o_r = self.T_ch_r @ np.linalg.inv(T_ch_c) @ T_o_c
+        # quat_final = quaternion_from_matrix(T_o_r)
+
+        ######################3
+        T_r_ch = np.linalg.inv(self.T_ch_r)  
+        # other test...
+        rotation_matrix = T_ch_c[:3, :3]
+        point_in_camera_coordinate = point_cam
+        translation_vector = T_ch_c[:3, 3]
+        C = - np.linalg.inv(rotation_matrix) @ translation_vector
+        point_in_world_coordinate = np.linalg.inv(rotation_matrix) @ (point_in_camera_coordinate - translation_vector)
+        plane_equation = np.array([0, 0, 1, 0]) # a, b, c, d
+        t = (plane_equation[-1] - np.dot(plane_equation[0:3], C)) / np.dot(plane_equation[0:3], (point_in_world_coordinate - C))
+        approximated_world_coord = C + t * (point_in_world_coordinate - C)
+        print(approximated_world_coord)
+        print(np.linalg.inv(T_r_ch[:3,:3]) @ -T_r_ch[:3,3] + np.linalg.inv(T_r_ch[:3,:3]) @ approximated_world_coord)
+        ####################################################################
+        ####################################################################                
+        realz = T_ch_c[:3, 3]
+
+        T_o_ch = np.linalg.inv(T_ch_c) @ T_o_c
+
+
+        T_o_r = euler_matrix(0, 0, rotation, 'rzyx')
+        Rotation_AR = euler_matrix(rotation, 0, 0, 'rzxy')
+        quaternion_AR = quaternion_from_matrix(Rotation_AR)
+        print(quaternion_AR)
+        T_o_r[:3,3] = np.linalg.inv(T_r_ch[:3,:3]) @ -T_r_ch[:3,3] + np.linalg.inv(T_r_ch[:3,:3]) @ approximated_world_coord
+
+        #T_o_r = T_r_ch @ np.linalg.inv(T_o_ch).T
 
         quat_final = quaternion_from_matrix(T_o_r)
+
+        #########################
 
         # Step 6: Broadcast TF
         t = TransformStamped()
@@ -134,10 +168,10 @@ class BottlePoseNode(Node):
         t.transform.translation.x = T_o_r[0,3]
         t.transform.translation.y = T_o_r[1,3]
         t.transform.translation.z = T_o_r[2,3]
-        t.transform.rotation.x = quat_final[1]
-        t.transform.rotation.y = quat_final[2]
-        t.transform.rotation.z = quat_final[3]
-        t.transform.rotation.w = quat_final[0]
+        t.transform.rotation.x = quat_final[0]
+        t.transform.rotation.y = quat_final[1]
+        t.transform.rotation.z = quat_final[2]
+        t.transform.rotation.w = quat_final[3]
         self.tf_broadcaster.sendTransform(t)
 
         # Step 7: Publish PoseStamped
