@@ -3,3 +3,7 @@
 	url = https://github.com/PickNikRobotics/ros2_robotiq_gripper.git
 	branch = humble
 	update = rebase
+[submodule "src/serial"]
+	path = src/serial
+	url = https://github.com/tylerjw/serial.git
+	branch = ros2
