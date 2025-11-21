@@ -2,3 +2,4 @@
 	path = src/ros2_robotiq_gripper
 	url = https://github.com/PickNikRobotics/ros2_robotiq_gripper.git
 	branch = humble
+	update = rebase
