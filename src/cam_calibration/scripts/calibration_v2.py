@@ -19,7 +19,7 @@ CALIB_PATH = os.path.join(pwd, "calibration.yaml")
 class CameraPoseEstimation(Node):
     def __init__(self):
         super().__init__('camera_pose_estimation_node')
-
+        self.once = False
         # Parameter to force new calibration
         self.declare_parameter("force_calibration", False)
         self.force_calibration = self.get_parameter("force_calibration").value
@@ -86,6 +86,8 @@ class CameraPoseEstimation(Node):
 
                 self.calibrated = True
                 self.get_logger().info(f"Loaded calibration from {CALIB_PATH}")
+                self.get_logger().info(f"Chessboard tvec = {self.tvec}")
+                self.get_logger().info(f"Chessboard rvec = {self.rvec}")
 
             except Exception as e:
                 self.get_logger().error(f"Failed to load YAML calibration: {e}")
@@ -160,26 +162,31 @@ class CameraPoseEstimation(Node):
         except CvBridgeError as e:
             return
 
-        if self.calibrated:
+        if self.calibrated and not self.once:
             ang = np.linalg.norm(self.rvec)
             axis = self.rvec.reshape(3) / ang
+            self.get_logger().info(f"axis: {axis}")
             quat = tf_transformations.quaternion_about_axis(ang, axis)
+            T_ch_c = tf_transformations.quaternion_matrix(quat)
+            T_ch_c[:3, 3] = np.array(self.tvec).T
 
+            T_c_ch = np.linalg.inv(T_ch_c)
+            c_quat = tf_transformations.quaternion_from_matrix(T_c_ch)
 
             t = TransformStamped()
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = "/camera"
-            t.child_frame_id = "/chessboard"
+            t.header.frame_id = "chessboard"
+            t.child_frame_id = "camera"
 
-            t.transform.translation.x = float(self.tvec[0])
-            t.transform.translation.y = float(self.tvec[1])
-            t.transform.translation.z = float(self.tvec[2])
+            t.transform.translation.x = T_c_ch[0,3]
+            t.transform.translation.y = T_c_ch[1,3]
+            t.transform.translation.z = T_c_ch[2,3]
 
-            t.transform.rotation.x = quat[0]
-            t.transform.rotation.y = quat[1]
-            t.transform.rotation.z = quat[2]
-            t.transform.rotation.w = quat[3]
-
+            t.transform.rotation.x = c_quat[0]
+            t.transform.rotation.y = c_quat[1]
+            t.transform.rotation.z = c_quat[2]
+            t.transform.rotation.w = c_quat[3]
+            self.once = True
             # self.camera_frame = t
 
             self.get_logger().info("Camera-Chessboard TF published!")
@@ -195,7 +202,7 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    # node.destroy_node()
+        node.destroy_node()
     finally:
         node.destroy_node()
         rclpy.shutdown()

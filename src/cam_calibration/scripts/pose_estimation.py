@@ -6,7 +6,7 @@ from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import PoseStamped, TransformStamped
 import numpy as np
 import tf2_ros
-from tf_transformations import euler_matrix, quaternion_from_matrix, quaternion_matrix
+from tf_transformations import euler_matrix, quaternion_from_matrix, quaternion_matrix, quaternion_from_euler, quaternion_multiply
 import cv2
 import math
 
@@ -35,7 +35,7 @@ class BottlePoseNode(Node):
         self.T_ch_r = self.compute_chessboard_to_robot()
 
         #
-        # self.timer = self.create_timer(1.0/200, self.timer_callback)
+        #self.timer = self.create_timer(1.0/200, self.timer_callback)
 
     def timer_callback(self):
         self.compute_chessboard_to_robot()
@@ -54,11 +54,13 @@ class BottlePoseNode(Node):
         """
         Returns 4x4 homogeneous transformation from chessboard to robot base.
         """
-        pos_ch_r = np.array([0.3378, -0.5781, -0.1595])
+        pos_ch_r = np.array([0.3416, -0.5797, -0.1649])
         # euler_ch_r = np.array([math.pi, 0.0, 0.0])
         # R_ch_r, _ = cv2.Rodrigues(R_ch_r[:3,:3])
-        quaternion = np.array([0.0026, -0.7053, 0.7089, -0.0002]) #wxyz
-        R_ch_r = quaternion_matrix(quaternion)
+        quaternion = np.array([1.0000, -0.0027, 0.0020, -0.0016]) #wxyz
+        q_180 = quaternion_from_euler(0, 0, 3.141592653589793)
+        q_rot = quaternion_multiply(quaternion, q_180)
+        R_ch_r = quaternion_matrix(q_rot)
         R_ch_r = R_ch_r[:3,:3]
         T_ch_r = np.eye(4)
         T_ch_r[:3, :3] = R_ch_r
@@ -108,8 +110,8 @@ class BottlePoseNode(Node):
         # Step 4: Lookup chessboard in camera frame (TF listener)
         try:
             t = self.tf_buffer.lookup_transform(
-                'camera',
-                'chessboard',
+                "camera",
+                "chessboard",
                 rclpy.time.Time(),  # Lookup at the latest available time
                 timeout=rclpy.duration.Duration(seconds=0.1)
             )
@@ -128,15 +130,15 @@ class BottlePoseNode(Node):
         # T_o_r = self.T_ch_r @ np.linalg.inv(T_ch_c) @ T_o_c
         # quat_final = quaternion_from_matrix(T_o_r)
 
-        ######################3
-        T_r_ch = np.linalg.inv(self.T_ch_r)  
+        ###################### 
+        T_r_ch = np.linalg.inv(self.T_ch_r)
         # other test...
         rotation_matrix = T_ch_c[:3, :3]
         point_in_camera_coordinate = point_cam
         translation_vector = T_ch_c[:3, 3]
         C = - np.linalg.inv(rotation_matrix) @ translation_vector
         point_in_world_coordinate = np.linalg.inv(rotation_matrix) @ (point_in_camera_coordinate - translation_vector)
-        plane_equation = np.array([0, 0, 1, 0]) # a, b, c, d
+        plane_equation = np.array([0, 0, 1, -0.21]) # a, b, c, d
         t = (plane_equation[-1] - np.dot(plane_equation[0:3], C)) / np.dot(plane_equation[0:3], (point_in_world_coordinate - C))
         approximated_world_coord = C + t * (point_in_world_coordinate - C)
         print(approximated_world_coord)
@@ -148,10 +150,8 @@ class BottlePoseNode(Node):
         T_o_ch = np.linalg.inv(T_ch_c) @ T_o_c
 
 
-        T_o_r = euler_matrix(0, 0, rotation, 'rzyx')
-        Rotation_AR = euler_matrix(rotation, 0, 0, 'rzxy')
-        quaternion_AR = quaternion_from_matrix(Rotation_AR)
-        print(quaternion_AR)
+        T_o_r = euler_matrix(-rotation - np.pi/2, 0, np.pi, 'rzyx')
+
         T_o_r[:3,3] = np.linalg.inv(T_r_ch[:3,:3]) @ -T_r_ch[:3,3] + np.linalg.inv(T_r_ch[:3,:3]) @ approximated_world_coord
 
         #T_o_r = T_r_ch @ np.linalg.inv(T_o_ch).T
