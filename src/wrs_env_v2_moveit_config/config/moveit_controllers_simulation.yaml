@@ -37,7 +37,7 @@ moveit_simple_controller_manager:
     type: GripperCommand
     action_ns: gripper_cmd
     joints: 
-      - ur5_robotiq_85_left_knuckle_joint
+      - ur5_finger_joint
     # action_ns: follow_joint_trajectory
 
   trajectory_execution:
