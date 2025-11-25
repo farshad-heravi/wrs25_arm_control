@@ -2,6 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.action import ActionServer
 from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import PoseStamped, TransformStamped
 import numpy as np
@@ -9,6 +10,7 @@ import tf2_ros
 from tf_transformations import euler_matrix, quaternion_from_matrix, quaternion_matrix, quaternion_from_euler, quaternion_multiply
 import cv2
 import math
+from cam_calibration.action import BottleCalibration
 
 class BottlePoseNode(Node):
     def __init__(self):
@@ -21,6 +23,15 @@ class BottlePoseNode(Node):
 
         # Publisher
         self.pub_pose = self.create_publisher(PoseStamped, '/bottle_pose', 10)
+
+        # Action Server
+        self._action_server = ActionServer(
+            self,
+            BottleCalibration,
+            'bottle_calibration_action',
+            self.execute_calibration_callback
+        )
+        self.get_logger().info('Bottle calibration action server initialized')
 
         # TF2
         self.tf_buffer = tf2_ros.Buffer()
@@ -120,9 +131,9 @@ class BottlePoseNode(Node):
             quat = [quat_msg.x, quat_msg.y, quat_msg.z, quat_msg.w]
             T_ch_c = quaternion_matrix(quat)
             T_ch_c[:3, 3] = trans
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            self.get_logger().warn("Chessboard TF not found")
-            return
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+            self.get_logger().warn(f"Chessboard TF not found: {str(e)}")
+            return None
 
         
 
@@ -187,11 +198,61 @@ class BottlePoseNode(Node):
         pose_out.pose.orientation.z = q[2]
         pose_out.pose.orientation.w = q[3]
 
+        # Publish to topic
         self.pub_pose.publish(pose_out)
         self.get_logger().info(f"Bottle pose published: {pose_out.pose.position}")
 
+        # Return the computed pose
+        return pose_out
 
-        # publish world chessboard tf
+    def execute_calibration_callback(self, goal_handle):
+        """
+        Action server callback for bottle calibration.
+        Receives pixel pose and returns computed bottle pose.
+        """
+        self.get_logger().info('Executing bottle calibration action...')
+        
+        # Send feedback
+        feedback_msg = BottleCalibration.Feedback()
+        feedback_msg.status = 'Processing bottle pixel pose'
+        goal_handle.publish_feedback(feedback_msg)
+        
+        # Check if camera info is available
+        if self.camera_info is None:
+            self.get_logger().error("Camera info not yet received")
+            goal_handle.abort()
+            result = BottleCalibration.Result()
+            result.success = False
+            result.message = "Camera info not available"
+            result.bottle_pose = PoseStamped()
+            return result
+        
+        # Get the pixel pose from the goal
+        pixel_pose = goal_handle.request.pixel_pose
+        
+        # Compute bottle pose
+        feedback_msg.status = 'Computing bottle pose in robot frame'
+        goal_handle.publish_feedback(feedback_msg)
+        
+        bottle_pose = self.compute_bottle_pose(pixel_pose)
+        
+        # Prepare result
+        result = BottleCalibration.Result()
+        
+        if bottle_pose is None:
+            self.get_logger().error("Failed to compute bottle pose")
+            goal_handle.abort()
+            result.success = False
+            result.message = "Failed to compute bottle pose - TF lookup failed"
+            result.bottle_pose = PoseStamped()
+        else:
+            self.get_logger().info(f"Bottle calibration completed successfully")
+            goal_handle.succeed()
+            result.success = True
+            result.message = "Bottle pose computed successfully"
+            result.bottle_pose = bottle_pose
+        
+        return result
 
     '''
     def computeBottlePose(self, rect, idx):

@@ -1,0 +1,11 @@
+# Goal definition
+geometry_msgs/PoseStamped pixel_pose  # Bottle pixel coordinates (x, y in position, rotation in z)
+---
+# Result definition
+bool success
+string message
+geometry_msgs/PoseStamped bottle_pose  # Computed bottle pose in robot frame
+---
+# Feedback definition
+string status
+
