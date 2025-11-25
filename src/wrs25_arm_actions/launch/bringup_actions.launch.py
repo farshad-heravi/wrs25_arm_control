@@ -29,12 +29,6 @@ def generate_launch_description():
         description='Automatically connect to Robotiq gripper on startup'
     )
 
-    fake_joint_state_arg = DeclareLaunchArgument(
-        'fake_joint_state',
-        default_value='false',
-        description='Use fake joint state for Robotiq gripper'
-    )
-    
     # Get path to kinematics configuration
     moveit_config_pkg = get_package_share_directory('wrs_env_v2_moveit_config')
     kinematics_yaml_path = os.path.join(moveit_config_pkg, 'config', 'kinematics.yaml')
@@ -68,25 +62,9 @@ def generate_launch_description():
         output='screen',
     )
 
-    # Robotiq gripper action server - it is commented since it is brought up in start_moveit.launch.py in wrs25_moveit_config package
-    # robotiq_gripper_server = Node(
-    #     package='wrs25_arm_actions',
-    #     executable='robotiq_gripper_action_server.py',
-    #     name='robotiq_gripper_action_server',
-    #     output='screen',
-    #     parameters=[{
-    #         'default_ip': LaunchConfiguration('robotiq_ip'),
-    #         'default_port': LaunchConfiguration('robotiq_port'),
-    #         'auto_connect': LaunchConfiguration('robotiq_auto_connect'),
-    #         'fake_joint_state': LaunchConfiguration('fake_joint_state'),
-    #     }]
-    # )
-
     return LaunchDescription([
         default_ip_arg,
         default_port_arg,
         auto_connect_arg,
-        fake_joint_state_arg,
         container,
-        # robotiq_gripper_server,
     ])
