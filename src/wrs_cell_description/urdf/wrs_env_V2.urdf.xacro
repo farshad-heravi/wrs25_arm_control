@@ -36,7 +36,7 @@
         physical_parameters_file="$(find ur_description)/config/ur5e/physical_parameters.yaml"
         visual_parameters_file="$(find ur_description)/config/ur5e/visual_parameters.yaml"
         initial_positions="${initial_positions}">
-        <origin xyz="${-0.27/2} ${-0.27/2} 0.015" rpy="0 0 ${pi}"/>
+        <origin xyz="${-0.27/2} -.012 0.015" rpy="0 0 ${pi}"/>
     </xacro:ur_robot>
 
     <!-- World link -->
