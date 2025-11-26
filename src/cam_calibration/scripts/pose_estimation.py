@@ -65,11 +65,11 @@ class BottlePoseNode(Node):
         """
         Returns 4x4 homogeneous transformation from chessboard to robot base.
         """
-        pos_ch_r = np.array([0.3565, -0.5841, -0.1667])
+        pos_ch_r = np.array([0.3818, -0.7384, -0.1602])
         # euler_ch_r = np.array([math.pi, 0.0, 0.0])
         # R_ch_r, _ = cv2.Rodrigues(R_ch_r[:3,:3])
-        quaternion = np.array([-0.7048, 0.7094, 0.0004, 0.0031]) #wxyz
-        q_180 = quaternion_from_euler(0, 0, 3.141592653589793)
+        quaternion = np.array([0.0012, 0.7028, 0.7114, 0.0031]) #wxyz
+        q_180 = quaternion_from_euler(np.pi/2, 0, 0)
         q_rot = quaternion_multiply(quaternion, q_180)
         R_ch_r = quaternion_matrix(q_rot)
         R_ch_r = R_ch_r[:3,:3]
@@ -161,7 +161,7 @@ class BottlePoseNode(Node):
         T_o_ch = np.linalg.inv(T_ch_c) @ T_o_c
 
 
-        T_o_r = euler_matrix(-rotation - np.pi/2, 0, np.pi, 'rzyx')
+        T_o_r = euler_matrix(rotation - np.pi/2, 0, np.pi, 'rzyx')
 
         T_o_r[:3,3] = np.linalg.inv(T_r_ch[:3,:3]) @ -T_r_ch[:3,3] + np.linalg.inv(T_r_ch[:3,:3]) @ approximated_world_coord
 
