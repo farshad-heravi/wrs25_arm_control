@@ -53,12 +53,18 @@ def generate_launch_description():
         name='gripper_control_action_server',
     )
 
+    circ_motion_server_component = ComposableNode(
+        package='wrs25_arm_actions',
+        plugin='wrs25_arm_actions::CircMotionActionServer',
+        name='circ_motion_action_server',
+    )
+
     container = ComposableNodeContainer(
         name='wrs_action_server_container',
         namespace='',
         package='rclcpp_components',
         executable='component_container',
-        composable_node_descriptions=[server_component, gripper_server_component],
+        composable_node_descriptions=[server_component, gripper_server_component, circ_motion_server_component],
         output='screen',
     )
 

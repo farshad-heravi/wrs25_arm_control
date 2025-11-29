@@ -11,7 +11,9 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(moveit_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(shape_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -23,6 +25,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
   "action/GripperControl.action"
   "action/RobotiqGripperControl.action"
+  "action/CircMotion.action"
   DEPENDENCIES geometry_msgs
 )
 
@@ -49,6 +52,34 @@ rclcpp_components_register_node(
   go_to_pose_action_server
   PLUGIN "wrs25_arm_actions::GoToPoseActionServer"
   EXECUTABLE go_to_pose_action_server_exe
+)
+
+# --- Add rules for the CircMotion action server component ---
+add_library(circ_motion_action_server SHARED src/circ_motion_action_server.cpp)
+target_include_directories(circ_motion_action_server PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp>
+)
+ament_target_dependencies(circ_motion_action_server
+  rclcpp
+  rclcpp_action
+  rclcpp_components
+  moveit_ros_planning_interface
+  moveit_msgs
+  geometry_msgs
+  shape_msgs
+  sensor_msgs
+)
+
+# Link against the action type support library that we generated in this package
+target_link_libraries(circ_motion_action_server ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
+install(TARGETS circ_motion_action_server
+  DESTINATION lib)
+
+rclcpp_components_register_node(
+  circ_motion_action_server
+  PLUGIN "wrs25_arm_actions::CircMotionActionServer"
+  EXECUTABLE circ_motion_action_server_exe
 )
 
 # --- Add rules for the action client executable ---
