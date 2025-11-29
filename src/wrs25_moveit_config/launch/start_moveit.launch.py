@@ -55,16 +55,18 @@ def generate_launch_description():
     ]
 
     def launch_setup(context, *args, **kwargs):
-        use_fake_hardware = context.launch_configurations.get('use_fake_hardware', 'false')
-        use_real_robot = context.launch_configurations.get('real_robot', 'false')
-        use_sim_time = context.launch_configurations.get('use_sim_time', 'false')
-        use_rviz = context.launch_configurations.get('use_rviz', 'true')
+        use_fake_hardware = context.launch_configurations.get('use_fake_hardware', False)
+        real_robot = context.launch_configurations.get('real_robot', False)
+        use_sim_time = context.launch_configurations.get('use_sim_time', False)
+        use_rviz = context.launch_configurations.get('use_rviz', True)
         robot_ip = context.launch_configurations.get('robot_ip', '192.168.1.101')
         com_port = context.launch_configurations.get('com_port', '/dev/ttyUSB0')
-        fake_sensor_commands = context.launch_configurations.get('fake_sensor_commands', 'false')
-        fake_robotiq_gripper = context.launch_configurations.get('fake_robotiq_gripper', 'false')
-
-        if use_real_robot:
+        fake_sensor_commands = context.launch_configurations.get('fake_sensor_commands', False)
+        fake_robotiq_gripper = context.launch_configurations.get('fake_robotiq_gripper', False)
+        real_robot_bool = real_robot=='true'
+        use_sim_time_bool = use_sim_time=='true'
+        
+        if real_robot_bool:
             moveit_config_file = "config/moveit_controllers_real_robot.yaml"
             joint_controllers_file = os.path.join( get_package_share_directory('wrs25_moveit_config'), 'config', 'ros2_controllers.yaml' )
             log1 = LogInfo( msg=['Loading Controllers for Real Robot'] )
@@ -108,7 +110,7 @@ def generate_launch_description():
             package="robot_state_publisher",
             executable="robot_state_publisher",
             name="robot_state_publisher",
-            parameters=[moveit_config.robot_description, {'use_sim_time': use_sim_time == 'true'}],
+            parameters=[moveit_config.robot_description, {'use_sim_time': use_sim_time_bool}],
             output="screen"
         )
 
@@ -123,7 +125,7 @@ def generate_launch_description():
                         'launch_rviz': 'false',
                         'robot_state_pub_node': 'false',
                     }.items(),
-                    condition=IfCondition(use_real_robot),
+                    condition=IfCondition(real_robot),
                 )
 
         # Robot State Publisher - Merger node
@@ -131,7 +133,7 @@ def generate_launch_description():
             package="wrs25_moveit_config",
             executable="joint_state_merger.py",
             output="screen",
-            condition=IfCondition(use_real_robot)
+            condition=IfCondition(real_robot)
         )
 
         # start robotiq_gripper_action_server to publish joint state for real/fake gripper
@@ -151,7 +153,7 @@ def generate_launch_description():
             parameters=[
                 moveit_config.robot_description,
                 joint_controllers_file,
-                {'use_sim_time': use_sim_time},
+                {'use_sim_time': use_sim_time_bool},
             ],
             # remappings=[('/joint_states', '/joint_states_unfiltered')],
             output="screen",
@@ -165,7 +167,7 @@ def generate_launch_description():
             executable="spawner",
             arguments=["scaled_joint_trajectory_controller", "--controller-manager", "/controller_manager"],
             output="screen",
-            condition=IfCondition(use_real_robot)
+            condition=IfCondition(real_robot)
         )
 
         # Spawners for simulation controllers - only when using fake hardware
@@ -205,7 +207,7 @@ def generate_launch_description():
             output="screen",
             parameters=[
                 moveit_config.to_dict(),
-                {'use_sim_time': False},
+                {'use_sim_time': use_sim_time_bool},
                 {"trajectory_execution.allowed_start_tolerance": 0.05},
                 {"trajectory_execution.allowed_goal_duration_margin": 0.5},
                 {"log_level": "DEBUG"},
@@ -229,6 +231,7 @@ def generate_launch_description():
 
 
         return [
+            log1,
             ur_robot_bringup_node,
             robot_state_publisher_node,
             robot_joint_state_merger_node,
