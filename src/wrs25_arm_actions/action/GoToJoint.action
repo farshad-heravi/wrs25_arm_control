@@ -1,0 +1,12 @@
+# Goal definition
+float64[] joint_positions # Target joint positions (radians)
+string planning_pipeline_id # e.g., "ompl", "pilz_industrial_motion_planner", "chomp"
+string planner_id # e.g., "RRTkConfigDefault", "LIN", "PTP", "CHOMP"
+---
+# Result definition
+bool success
+string message
+---
+# Feedback definition
+float64[] current_joint_positions
+

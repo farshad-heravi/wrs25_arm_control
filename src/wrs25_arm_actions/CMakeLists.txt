@@ -23,6 +23,7 @@ find_package(rclpy REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
+  "action/GoToJoint.action"
   "action/GripperControl.action"
   "action/RobotiqGripperControl.action"
   "action/CircMotion.action"
@@ -52,6 +53,32 @@ rclcpp_components_register_node(
   go_to_pose_action_server
   PLUGIN "wrs25_arm_actions::GoToPoseActionServer"
   EXECUTABLE go_to_pose_action_server_exe
+)
+
+# --- Add rules for the GoToJoint action server component ---
+add_library(go_to_joint_action_server SHARED src/go_to_joint_action_server.cpp)
+target_include_directories(go_to_joint_action_server PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp>
+)
+ament_target_dependencies(go_to_joint_action_server
+  rclcpp
+  rclcpp_action
+  rclcpp_components
+  moveit_ros_planning_interface
+  geometry_msgs
+  sensor_msgs
+)
+
+# Link against the action type support library that we generated in this package
+target_link_libraries(go_to_joint_action_server ${PROJECT_NAME}__rosidl_typesupport_cpp)
+
+install(TARGETS go_to_joint_action_server
+  DESTINATION lib)
+
+rclcpp_components_register_node(
+  go_to_joint_action_server
+  PLUGIN "wrs25_arm_actions::GoToJointActionServer"
+  EXECUTABLE go_to_joint_action_server_exe
 )
 
 # --- Add rules for the CircMotion action server component ---
