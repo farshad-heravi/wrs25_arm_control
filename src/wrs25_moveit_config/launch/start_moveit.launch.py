@@ -133,7 +133,10 @@ def generate_launch_description():
             package="wrs25_moveit_config",
             executable="joint_state_merger.py",
             output="screen",
-            condition=IfCondition(real_robot)
+            parameters=[{
+                'fake_joint_state': LaunchConfiguration('fake_robotiq_gripper'),
+            }],
+            # condition=IfCondition(real_robot)
         )
 
         # start robotiq_gripper_action_server to publish joint state for real/fake gripper
@@ -155,7 +158,7 @@ def generate_launch_description():
                 joint_controllers_file,
                 {'use_sim_time': use_sim_time_bool},
             ],
-            # remappings=[('/joint_states', '/joint_states_unfiltered')],
+            remappings=[('/joint_states', '/ur_internal/joint_states')],
             output="screen",
             condition=IfCondition(use_fake_hardware)
         )
@@ -197,6 +200,7 @@ def generate_launch_description():
             executable="spawner",
             arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
             output="screen",
+            remappings=[('/joint_states', '/ur_internal/joint_states')],
             condition=IfCondition(use_fake_hardware)
         )
 
