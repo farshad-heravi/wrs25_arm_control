@@ -142,7 +142,8 @@
     <link name="${arm_prefix}suction_gripper" >
         <visual>
             <geometry>
-                <mesh filename="package://robot_description/meshes/suction_gripper/visual/suction_gripper.stl" />
+                <!-- <mesh filename="package://robot_description/meshes/suction_gripper/visual/SuctionCupHolder.stl" scale="0.001 0.001 0.001" /> -->
+                <mesh filename="package://robot_description/meshes/suction_gripper/visual/SuctionCupHolder.dae" />
             </geometry>
             <material name="dark_grey">
             <color rgba="0.3 0.3 0.3 1.0"/>
@@ -150,7 +151,7 @@
         </visual>
         <collision>
             <geometry>
-                <mesh filename="package://robot_description/meshes/suction_gripper/collision/suction_gripper.stl" />
+                <mesh filename="package://robot_description/meshes/suction_gripper/collision/SuctionCupHolder.stl"/>
             </geometry>
         </collision>
         <inertial>
@@ -163,7 +164,7 @@
     <joint name="${arm_prefix}suction_gripper_joint" type="fixed">
         <parent link="${arm_prefix}suction_gripper_attaching_point"/>
         <child link="${arm_prefix}suction_gripper"/>
-        <origin xyz="0.0 0.0 -0.0065" rpy="0 0 0"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 ${pi/2}"/>
     </joint>
 
     <!-- Suction Cup Tool Center Point (TCP) - Frame between suction cup -->
