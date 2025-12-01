@@ -35,7 +35,7 @@ moveit_simple_controller_manager:
   hand_controller:
     # type: FollowJointTrajectory
     type: GripperCommand
-    action_ns: gripper_cmd
+    action_ns: gripper_command
     joints: 
       - ur5_finger_joint
     # action_ns: follow_joint_trajectory
