@@ -50,29 +50,31 @@ class RobotiqGripperActionServer(Node):
         # Create timer to periodically publish gripper position
         self.publish_timer = self.create_timer(0.1, self.publish_position_callback)
         
-        # Create action server
-        self._action_server = ActionServer(
-            self,
-            RobotiqGripperControl,
-            'robotiq_gripper_control',
-            execute_callback=self.execute_callback,
-            goal_callback=self.goal_callback,
-            cancel_callback=self.cancel_callback,
-            callback_group=ReentrantCallbackGroup()
-        )
-
-        self._action_server_moveit = ActionServer(
-            self,
-            GripperCommand,
-            '/hand_controller/gripper_command',
-            execute_callback=self.execute_callback_moveit,
-            goal_callback=self.goal_callback_moveit,
-            cancel_callback=self.cancel_callback_moveit,
-            callback_group=ReentrantCallbackGroup()
-        )
+        # Create action server - for real hardware
+        if not self.fake_joint_state:
+            self._action_server = ActionServer(
+                self,
+                RobotiqGripperControl,
+                'robotiq_gripper_control',
+                execute_callback=self.execute_callback,
+                goal_callback=self.goal_callback,
+                cancel_callback=self.cancel_callback,
+                callback_group=ReentrantCallbackGroup()
+            )
+        else:
+            self._action_server_moveit = ActionServer(
+                self,
+                GripperCommand,
+                '/hand_controller/gripper_command',
+                execute_callback=self.execute_callback_moveit,
+                goal_callback=self.goal_callback_moveit,
+                cancel_callback=self.cancel_callback_moveit,
+                callback_group=ReentrantCallbackGroup()
+            )
         
         self.get_logger().info('Robotiq Gripper Action Server initialized')
-        self.get_logger().info(f'Default IP: {self.default_ip}, Port: {self.default_port}')
+        if not self.fake_joint_state:
+            self.get_logger().info(f'Default IP: {self.default_ip}, Port: {self.default_port}')
         
         # Auto-connect if requested
         if auto_connect and not self.fake_joint_state:
@@ -211,7 +213,6 @@ class RobotiqGripperActionServer(Node):
             except Exception as e:
                 self.get_logger().error(f'Error disconnecting gripper: {e}')
         super().destroy_node()
-
 
     def execute_callback_moveit(self, goal_handle):
         """Execute the action."""
