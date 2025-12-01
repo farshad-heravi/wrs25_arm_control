@@ -10,7 +10,7 @@
     
 
     <!-- suction gripper properties -->
-    <xacro:property name="thickness_of_the_suction_cup" value="0.030" /> <!-- 30mm -->
+    <xacro:property name="thickness_of_the_suction_cup" value="0.016" /> <!-- 16mm -->
     
     <!-- Include official UR5e description from ur_description package -->
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
@@ -184,7 +184,7 @@
     <joint name="${arm_prefix}suction_tcp_joint" type="fixed">
         <parent link="${arm_prefix}suction_gripper_attaching_point"/>
         <child link="${arm_prefix}suction_tcp"/>
-        <origin xyz="0 0 ${0.144 + thickness_of_the_suction_cup}" rpy="0 0 0"/>
+        <origin xyz="0 0 ${0.084 + thickness_of_the_suction_cup}" rpy="0 0 0"/>
     </joint>
 
     <!-- add camera pillar -->
