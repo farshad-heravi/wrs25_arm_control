@@ -10,7 +10,7 @@
     
 
     <!-- suction gripper properties -->
-    <xacro:property name="thickness_of_the_suction_cup" value="0.016" /> <!-- 16mm -->
+    <xacro:property name="thickness_of_the_suction_cup" value="0.035" /> <!-- 35mm -->
     
     <!-- Include official UR5e description from ur_description package -->
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
@@ -246,5 +246,6 @@
         <child link="rail_link"/>
         <origin xyz="${rail_width/2 + 0.1} ${0/2} ${-cobot_station_height+rail_height/2}" rpy="0 0 ${pi/2}"/>
     </joint>
+
 
 </robot>
