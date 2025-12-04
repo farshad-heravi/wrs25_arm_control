@@ -3,6 +3,8 @@ geometry_msgs/PoseStamped target_pose
 string planning_pipeline_id # e.g., "ompl", "pilz_industrial_motion_planner", "chomp"
 string planner_id # e.g., "RRTkConfigDefault", "LIN", "PTP", "CHOMP"
 string tcp_link # e.g., "ur5_gripper_tcp", "ur5_suction_tcp" (optional, defaults to "ur5_gripper_tcp")
+float64 velocity_scaling # Velocity scaling factor (0.0-1.0, 0 or negative uses default)
+float64 acceleration_scaling # Acceleration scaling factor (0.0-1.0, 0 or negative uses default)
 ---
 # Result definition
 bool success
