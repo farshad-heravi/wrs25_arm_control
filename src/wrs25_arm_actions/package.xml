@@ -27,6 +27,12 @@
   <depend>visualization_msgs</depend>
   <depend>tf2</depend>
   <depend>rclpy</depend>
+  <depend>ur_dashboard_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>moveit_msgs</depend>
+  <depend>warehouse_ros</depend>
+  <depend>warehouse_ros_sqlite</depend>
+  <depend>moveit_ros_warehouse</depend>
   
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
