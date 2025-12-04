@@ -1,0 +1,27 @@
+# MoveIt Warehouse Configuration for Motion Plan Caching
+# Using SQLite backend (no external database server required)
+
+warehouse:
+  # SQLite plugin - stores data in a local file
+  warehouse_plugin: warehouse_ros_sqlite::DatabaseConnection
+  # Path to the SQLite database file
+  warehouse_host: ~/.ros/moveit_warehouse.sqlite
+  
+# Move Group node parameters for plan caching
+move_group:
+  # Enable motion plan caching
+  plan_cache_mode: "AllowApprox"  # Options: "AllowApprox" or "Exact"
+  
+  # Warehouse connection for storing/retrieving motion plans (SQLite)
+  warehouse_plugin: warehouse_ros_sqlite::DatabaseConnection
+  warehouse_host: ~/.ros/moveit_warehouse.sqlite
+  
+  # Allow using cached motion plans
+  enable_plan_request_caching: true
+  
+  # Tolerance for matching cached plans (radians for joint space)
+  start_state_max_bounds_error: 0.05
+  goal_joint_tolerance: 0.01
+  goal_position_tolerance: 0.001
+  goal_orientation_tolerance: 0.01
+

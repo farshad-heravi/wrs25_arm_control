@@ -204,7 +204,10 @@ def generate_launch_description():
             condition=IfCondition(use_fake_hardware)
         )
 
-        # move group node
+        # Warehouse database path for motion plan caching (using SQLite)
+        warehouse_db_path = os.path.expanduser("~/.ros/moveit_warehouse.sqlite")
+        
+        # move group node with warehouse/plan caching support (SQLite)
         move_group_node = Node(
             package="moveit_ros_move_group",
             executable="move_group",
@@ -215,6 +218,9 @@ def generate_launch_description():
                 {"trajectory_execution.allowed_start_tolerance": 0.05},
                 {"trajectory_execution.allowed_goal_duration_margin": 0.5},
                 {"log_level": "DEBUG"},
+                # Warehouse settings for plan caching (SQLite - no server required)
+                {"warehouse_plugin": "warehouse_ros_sqlite::DatabaseConnection"},
+                {"warehouse_host": warehouse_db_path},
             ],
         )
 
@@ -224,7 +230,12 @@ def generate_launch_description():
             name="rviz2",
             output="screen",
             arguments=["-d", rviz_config],
-            parameters=[moveit_config.to_dict()],
+            parameters=[
+                moveit_config.to_dict(),
+                # Warehouse settings for RViz Motion Planning plugin (SQLite)
+                {"warehouse_plugin": "warehouse_ros_sqlite::DatabaseConnection"},
+                {"warehouse_host": warehouse_db_path},
+            ],
         )
 
         timer_action = TimerAction(

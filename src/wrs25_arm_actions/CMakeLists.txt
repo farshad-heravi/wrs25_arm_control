@@ -20,6 +20,9 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(warehouse_ros REQUIRED)
+find_package(moveit_ros_warehouse REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToPose.action"
@@ -39,8 +42,12 @@ ament_target_dependencies(go_to_pose_action_server
   rclcpp_action
   rclcpp_components
   moveit_ros_planning_interface
+  moveit_ros_warehouse
+  moveit_msgs
   geometry_msgs
   sensor_msgs
+  trajectory_msgs
+  warehouse_ros
 )
 
 # Link against the action type support library that we generated in this package
@@ -174,6 +181,7 @@ install(PROGRAMS
   scripts/robotiq_gripper.py
   scripts/robotiq_gripper_action_server.py
   scripts/robotiq_gripper_action_client.py
+  scripts/ur_external_control_monitor.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
