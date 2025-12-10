@@ -6,6 +6,7 @@ from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
 import yaml
+from launch.conditions import IfCondition
 
 def generate_launch_description():
     """Launch the composable action server in a container."""
@@ -27,6 +28,12 @@ def generate_launch_description():
         'robotiq_auto_connect',
         default_value='false',
         description='Automatically connect to Robotiq gripper on startup'
+    )
+
+    real_robot_arg = DeclareLaunchArgument(
+        'real_robot',
+        default_value='true',
+        description='Use real robot'
     )
 
     # Get path to kinematics configuration
@@ -75,9 +82,19 @@ def generate_launch_description():
         output='screen',
     )
 
+    ur_external_control_monitor_node = Node(
+        package='wrs25_arm_actions',
+        executable='ur_external_control_monitor.py',
+        name='ur_external_control_monitor',
+        output='screen',
+        condition=IfCondition(LaunchConfiguration('real_robot')),
+    )
+
     return LaunchDescription([
         default_ip_arg,
         default_port_arg,
         auto_connect_arg,
+        real_robot_arg,
         container,
+        ur_external_control_monitor_node,
     ])

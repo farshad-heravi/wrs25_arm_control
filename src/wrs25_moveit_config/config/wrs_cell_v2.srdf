@@ -66,7 +66,6 @@
         <joint name="ur5_wrist_2_joint" value="-1.3089"/>
         <joint name="ur5_wrist_3_joint" value="1.658"/>
     </group_state>
-
     <group_state name="open" group="hand">
         <joint name="ur5_finger_joint" value="0"/>
     </group_state>
@@ -82,16 +81,121 @@
     <passive_joint name="ur5_right_outer_knuckle_joint"/>
     <passive_joint name="ur5_right_inner_finger_joint"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
-    <disable_collisions link1="camera_pillar_link" link2="rail_link" reason="Adjacent"/>
-    <disable_collisions link1="camera_pillar_link" link2="robot_base" reason="Adjacent"/>
-    <disable_collisions link1="camera_pillar_link" link2="ur5_base_link_inertia" reason="Never"/>
-    <disable_collisions link1="camera_pillar_link" link2="ur5_shoulder_link" reason="Never"/>
-    <disable_collisions link1="camera_pillar_link" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="beak_tool_link" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="beak_tool_link" link2="ur5_gripper_adapter" reason="Never"/>
+    <disable_collisions link1="beak_tool_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="beak_tool_link" link2="ur5_wrist_3_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="camera_pillar_link2" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="camera_pillar_link3_horizontal" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="camera_pillar_link4_vertical" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="flat_box_storage_jig1_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="flat_box_storage_jig2_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="flat_box_storage_jig3_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_forearm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_gripper_adapter" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_left_outer_knuckle" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_wrist_1_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_wrist_2_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link1" link2="ur5_wrist_3_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="camera_pillar_link3_horizontal" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="camera_pillar_link4_vertical" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="flat_box_storage_jig1_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="flat_box_storage_jig2_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="flat_box_storage_jig3_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_forearm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_wrist_1_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_wrist_2_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link2" link2="ur5_wrist_3_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="camera_pillar_link4_vertical" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="flat_box_storage_jig1_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="flat_box_storage_jig2_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="flat_box_storage_jig3_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_forearm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_gripper_adapter" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_left_outer_knuckle" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_right_outer_knuckle" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_robotiq_140_base_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_wrist_1_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_wrist_2_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link3_horizontal" link2="ur5_wrist_3_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="flat_box_storage_jig1_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="flat_box_storage_jig2_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="flat_box_storage_jig3_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_forearm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_gripper_adapter" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_right_outer_knuckle" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_wrist_1_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_wrist_2_link" reason="Never"/>
+    <disable_collisions link1="camera_pillar_link4_vertical" link2="ur5_wrist_3_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="flat_box_storage_jig2_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="flat_box_storage_jig3_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig1_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="flat_box_storage_jig3_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig2_link" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="flat_box_storage_jig4_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig3_link" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig4_link" link2="rail_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig4_link" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig4_link" link2="tool_holder_link" reason="Adjacent"/>
+    <disable_collisions link1="flat_box_storage_jig4_link" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig4_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="flat_box_storage_jig4_link" link2="ur5_upper_arm_link" reason="Never"/>
     <disable_collisions link1="rail_link" link2="robot_base" reason="Adjacent"/>
+    <disable_collisions link1="rail_link" link2="tool_holder_link" reason="Adjacent"/>
     <disable_collisions link1="rail_link" link2="ur5_base_link_inertia" reason="Never"/>
     <disable_collisions link1="rail_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="robot_base" link2="tool_holder_link" reason="Adjacent"/>
     <disable_collisions link1="robot_base" link2="ur5_base_link_inertia" reason="Adjacent"/>
     <disable_collisions link1="robot_base" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="tool_holder_link" link2="ur5_base_link_inertia" reason="Never"/>
+    <disable_collisions link1="tool_holder_link" link2="ur5_forearm_link" reason="Never"/>
+    <disable_collisions link1="tool_holder_link" link2="ur5_shoulder_link" reason="Never"/>
+    <disable_collisions link1="tool_holder_link" link2="ur5_upper_arm_link" reason="Never"/>
+    <disable_collisions link1="tool_holder_link" link2="ur5_wrist_1_link" reason="Never"/>
     <disable_collisions link1="ur5_base_link_inertia" link2="ur5_shoulder_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_forearm_link" link2="ur5_upper_arm_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_forearm_link" link2="ur5_wrist_1_link" reason="Adjacent"/>
@@ -216,7 +320,4 @@
     <disable_collisions link1="ur5_wrist_1_link" link2="ur5_wrist_2_link" reason="Adjacent"/>
     <disable_collisions link1="ur5_wrist_1_link" link2="ur5_wrist_3_link" reason="Never"/>
     <disable_collisions link1="ur5_wrist_2_link" link2="ur5_wrist_3_link" reason="Adjacent"/>
-
-    <!-- disable fingers' inner part collision check -->
-    <disable_collisions link1="ur5_left_inner_finger_pad" link2="ur5_right_inner_finger_pad" reason="Adjacent"/>
 </robot>

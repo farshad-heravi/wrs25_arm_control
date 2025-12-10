@@ -188,31 +188,108 @@
     </joint>
 
     <!-- add camera pillar -->
-    <link name="camera_pillar_link" >
+    <!-- <link name="camera_pillar_link1" >
         <visual>
             <geometry>
-                <box size="0.08 0.08 0.997"/>
+                <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" scale="1.0 1.0 8.0"/>
             </geometry>
+            <material name="dark_grey">
+                <color rgba="0.3 0.3 0.3 1.0"/>
+            </material>
         </visual>
         <collision>
             <geometry>
-                <box size="0.08 0.08 0.997"/>
+                <box size="0.05 0.05 0.8"/>
             </geometry>
-        </collision>
-    </link>
-    <joint name="camera_pillar_joint" type="fixed">
-        <parent link="world"/>
-        <child link="camera_pillar_link"/>
-        <origin xyz="-0.06 -0.96 0.0" rpy="0 0 0"/>
-    </joint>
+        </collision> </link>
+    <link name="camera_pillar_link2" >
+        <visual>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" scale="1.0 1.0 8.0"/>
+            </geometry>
+            <material name="dark_grey">
+                <color rgba="0.3 0.3 0.3 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.05 0.8"/>
+            </geometry>
+        </collision> </link>
+    <link name="camera_pillar_link3_horizontal" >
+        <visual>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" scale="1.0 1.0 7.2"/>
+            </geometry>
+            <material name="dark_grey">
+                <color rgba="0.3 0.3 0.3 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.05 0.72"/>
+            </geometry>
+        </collision> </link>
+    <link name="camera_pillar_link4_vertical" >
+        <visual>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" scale="1.0 1.0 5.0"/>
+            </geometry>
+            <material name="dark_grey">
+                <color rgba="0.3 0.3 0.3 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.05 0.5"/>
+            </geometry>
+        </collision> </link>
 
+    <joint name="camera_pillar_joint1" type="fixed">
+        <parent link="world"/>
+        <child link="camera_pillar_link1"/>
+        <origin xyz="${-0.72+0.030/2} -0.96 0.4" rpy="0 0 0"/>  </joint>
+    <joint name="camera_pillar_joint2" type="fixed">`
+        <parent link="world"/>
+        <child link="camera_pillar_link2"/>
+        <origin xyz="${-0.72+0.030/2+0.15} -0.96 0.4" rpy="0 0 0"/> </joint>
+
+    <joint name="camera_pillar_joint3_horizontal" type="fixed">
+        <parent link="world"/>
+        <child link="camera_pillar_link3_horizontal"/>
+        <origin xyz="${-0.72/2} -0.96 ${0.8+0.030/2}" rpy="0 ${pi/2} 0"/> </joint>
+    <joint name="camera_pillar_joint4_vertical" type="fixed"> 
+        <parent link="world"/>
+        <child link="camera_pillar_link4_vertical"/>
+        <origin xyz="${0.04/2} -0.96 ${0.8}" rpy="0 0 0"/> </joint>-->
+    
     <!-- define camera link -->
-    <link name="camera_link" />
-    <joint name="camera_to_worldjoint" type="fixed">
-        <parent link="camera_pillar_link"/>
+    <!-- <link name="camera_link" /> -->
+    <!-- <joint name="camera_to_world_joint" type="fixed">
+        <parent link="camera_pillar_link1"/>
         <child link="camera_link"/>
-        <origin xyz="-0.06 -0.96 1.0" rpy="0 0 0"/>
-    </joint>
+        <origin xyz="-0.56 -0.96 1.0" rpy="0 0 0"/>
+    </joint> -->
+
+    <!-- camera holder in the front -->
+    <link name="camera_pillar_link1" >
+        <visual>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" scale="1.0 1.0 8.0"/>
+            </geometry>
+            <material name="dark_grey">
+                <color rgba="0.3 0.3 0.3 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.05 0.8"/>
+            </geometry>
+        </collision> </link>
+    <joint name="camera_pillar_joint1" type="fixed">
+        <parent link="world"/>
+        <child link="camera_pillar_link1"/>
+        <origin xyz="${0.030/2} -0.96 0.4" rpy="0 0 0"/>  </joint>
 
     
 
@@ -238,14 +315,146 @@
             <mass value="100"/>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
-        </inertial>
-    </link>
-
+        </inertial> </link>
     <joint name="world_to_rail_joint" type="fixed">
         <parent link="world"/>
         <child link="rail_link"/>
-        <origin xyz="${rail_width/2 + 0.1} ${0/2} ${-cobot_station_height+rail_height/2}" rpy="0 0 ${pi/2}"/>
-    </joint>
+        <origin xyz="${rail_width/2 + 0.1} ${0/2} ${-cobot_station_height+rail_height/2}" rpy="0 0 ${pi/2}"/> </joint>
 
+    <!-- Add the jigs on the table  -->
+        <!-- four jigs for the flat box storage -->
+        <xacro:property name="flat_box_storage_jig_size" value="0.04"/> <!-- UPDATE THIS -->
+        <xacro:property name="box_height" value="0.215"/> <!-- UPDATE THIS -->
+        <xacro:property name="box_width" value="0.1"/> <!-- UPDATE THIS -->
+        <xacro:property name="box_length" value="0.24"/> <!-- UPDATE THIS -->
+        <xacro:property name="flatBoxStorage_corner_x" value="-0.48"/> <!-- UPDATE THIS - should match the boxAssembling/jig/x value in `wrs_setup.yaml` -->
+        <xacro:property name="flatBoxStorage_corner_y" value="-0.35"/> <!-- UPDATE THIS - should match the boxAssembling/jig/y value in `wrs_setup.yaml` -->
+        
+        <link name="flat_box_storage_jig1_link" >
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" />
+                </geometry>
+                <material name="dark_grey">
+                    <color rgba="0.3 0.3 0.3 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${flat_box_storage_jig_size} ${flat_box_storage_jig_size} 0.1"/>
+                </geometry>
+            </collision>    </link>
+        <link name="flat_box_storage_jig2_link" >
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" />
+                </geometry>
+                <material name="dark_grey">
+                    <color rgba="0.3 0.3 0.3 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${flat_box_storage_jig_size} ${flat_box_storage_jig_size} 0.1"/>
+                </geometry>
+            </collision>    </link>
+        <link name="flat_box_storage_jig3_link" >
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" />
+                </geometry>
+                <material name="dark_grey">
+                    <color rgba="0.3 0.3 0.3 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${flat_box_storage_jig_size} ${flat_box_storage_jig_size} 0.1"/>
+                </geometry>
+            </collision>    </link>
+        <link name="flat_box_storage_jig4_link" >
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/bosch_40_40_100.stl" />
+                </geometry>
+                <material name="dark_grey">
+                    <color rgba="0.3 0.3 0.3 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${flat_box_storage_jig_size} ${flat_box_storage_jig_size} 0.1"/>
+                </geometry>
+            </collision>    </link>
+        <joint name="world_to_flat_box_storage_jig1_joint" type="fixed">
+            <parent link="world"/> <child link="flat_box_storage_jig1_link"/>
+            <origin xyz="${flatBoxStorage_corner_x+flat_box_storage_jig_size/2} ${flatBoxStorage_corner_y} 0.05" rpy="0 0 0"/> </joint>
+        <joint name="world_to_flat_box_storage_jig2_joint" type="fixed">
+            <parent link="world"/> <child link="flat_box_storage_jig2_link"/>
+            <origin xyz="${flatBoxStorage_corner_x+flat_box_storage_jig_size/2} ${flatBoxStorage_corner_y-box_length} 0.05" rpy="0 0 0"/> </joint>
+        <joint name="world_to_flat_box_storage_jig3_joint" type="fixed">
+            <parent link="world"/>
+            <child link="flat_box_storage_jig3_link"/>
+            <origin xyz="${flatBoxStorage_corner_x+flat_box_storage_jig_size/2-0.04} ${flatBoxStorage_corner_y-box_length-box_width-flat_box_storage_jig_size/2} 0.05" rpy="0 0 0"/> </joint>
+        <joint name="world_to_flat_box_storage_jig4_joint" type="fixed">
+            <parent link="world"/> <child link="flat_box_storage_jig4_link"/>
+            <origin xyz="${flatBoxStorage_corner_x+flat_box_storage_jig_size/2-0.14} ${flatBoxStorage_corner_y-box_length-box_width-flat_box_storage_jig_size/2} 0.05" rpy="0 0 0"/> </joint>
+
+    
+        <!-- add the tool holder -->
+        <link name="tool_holder_link" >
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/ToolHolder.stl" />
+                </geometry>
+                <material name="dark_grey">
+                    <color rgba="0.3 0.3 0.3 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/ToolHolder.stl" />
+                </geometry>
+            </collision> </link>
+        <joint name="world_to_tool_holder_joint" type="fixed">
+            <parent link="world"/> <child link="tool_holder_link"/>
+            <origin xyz="${-0.6} ${-0.07} ${0.1}" rpy="0 0 0"/> </joint>
+
+        <!-- add beak tool inside the tool holder -->
+        <!-- <link name="beak_tool_link" >
+            <visual>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/BeakTool.stl" />
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/BeakTool.stl" />
+                </geometry>
+            </collision> </link>
+        <joint name="tool_holder_to_beak_tool_joint" type="fixed">
+            <parent link="tool_holder_link"/> <child link="beak_tool_link"/>
+            <origin xyz="0 0 0" rpy="0 0 ${pi}"/> </joint> -->
+    <!-- Temporarity add a bottle on the table -->
+    <link name="bottle1_link" >
+        <visual>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/bottle.glb" />
+            </geometry>
+        </visual> </link>
+    <link name="bottle2_link" >
+        <visual>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/bottle.glb" />
+            </geometry>
+        </visual> </link>
+    <joint name="world_to_bottle1_joint" type="fixed">
+        <parent link="world"/>
+        <child link="bottle1_link"/>
+        <origin xyz="0.4 -0.3 ${-0.165+0.205/2}" rpy="${pi/2} 0 ${pi/2}"/> </joint>
+    <joint name="world_to_bottle2_joint" type="fixed">
+        <parent link="world"/>
+        <child link="bottle2_link"/>
+        <origin xyz="0.3 -0.5 ${-0.165+0.205/2}" rpy="${pi/2} 0 ${pi/3}"/> </joint>
 
 </robot>

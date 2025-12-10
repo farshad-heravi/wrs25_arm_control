@@ -7,19 +7,4 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: Farshad Nozad Heravi
     author_email: f.n.heravi@gmail.com
-    generated_timestamp: 1763498108
-  control_xacro:
-    command:
-      - position
-    state:
-      - position
-      - velocity
-  modified_urdf:
-    xacros:
-      - control_xacro
-  control_xacro:
-    command:
-      - position
-    state:
-      - position
-      - velocity
+    generated_timestamp: 1765004032
